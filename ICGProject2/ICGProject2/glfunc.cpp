@@ -1,8 +1,12 @@
 #include "glfunc.h"
+#include "objects.h"
 //#include "math_3d.h"
 #define INTERVAL_BACKGROUND_CHANGE 1
 static int start;
 extern cy::TriMesh trimesh;
+vector<TriObj> objList;
+TriObj *tobj;
+
 cy::Point3f *Vertices;
 GLuint vao, *VBO;
 GLuint *vbid;
@@ -11,10 +15,19 @@ GLfloat vertice[] = { -1.0f,0.0f,0.0f,
 0.0f,0.0f,0.0f };
 
 bool LoadObj(const char *filename, bool loadMtl) {
-
-	if (!trimesh.LoadFromFileObj(filename, loadMtl)) return false;
+	TriObj *tobj = new TriObj;
+	if ( ! tobj->Load( name, mtlName==NULL ) ) {
+        printf(" -- ERROR: Cannot load file \"%s.\"", name);
+        delete tobj;
+        return false;
+    } 
+    else {
+        objList.push_back(tobj);  // add to the list
+    }    
+	//if (!trimesh.LoadFromFileObj(filename, loadMtl)) return false;
 	printf("Sucessfully load %s!", filename);
-	Vertices = &(trimesh.V(0));
+	//Vertices = &(trimesh.V(0));
+	Vertices = tobj.getVertices();
 	//initGLEW();
 	return true;
 }
@@ -28,11 +41,9 @@ void initGLEW() {
 	vbid = new GLuint[1];
 	glGenBuffers(1, vbid);
 	glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
-	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), vertice, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, tobj.getNumVertex() * sizeof(Point3f), Vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
-
-
 
 	/*
 	VBO = new GLuint[trimesh.NV()];
