@@ -133,10 +133,15 @@
     <ClInclude Include="cyHeader\cyTriMesh.h" />
     <ClInclude Include="glfunc.h" />
     <ClInclude Include="glHeader.h" />
+    <ClInclude Include="Object\objects.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glfunc.cpp" />
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shader\fs.light.glsl" />
+    <None Include="Shader\vs.light.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

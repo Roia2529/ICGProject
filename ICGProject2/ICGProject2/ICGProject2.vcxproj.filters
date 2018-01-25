@@ -39,6 +39,9 @@
     <ClInclude Include="cyHeader\cyCore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Object\objects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -47,5 +50,13 @@
     <ClCompile Include="glfunc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shader\fs.light.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Shader\vs.light.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -35,17 +35,17 @@ int main(int argc, char* args[])
 	}
 	/*initialize glew*/
 	initGLEW();
-
+	std::cout <<"---------Instruction-----------" << std::endl;
+	std::cout << "ESC : exit" << std::endl;
+	std::cout << "left mouse : adjust camera angles" << std::endl;
+	std::cout << "right mouse : adjust camera distance" << std::endl;
+	std::cout << "F6 : recompile shader" << std::endl;
 
 	//Set rendering function
 	glutDisplayFunc(GLrender); //put rendering func
 	glutKeyboardFunc(GLkeyboardInput);
 
 	glutIdleFunc(GLidle);
-
-	//Set main loop
-	//glutTimerFunc( 1000 / SCREEN_FPS, runMainLoop, 0 );
-	
 	//Start GLUT main loop
 	//This runs freeGLUT's internal main loop not our main loop.
 	glutMainLoop();

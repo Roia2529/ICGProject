@@ -1,47 +1,57 @@
 #include "glfunc.h"
-#include "objects.h"
+#include "Object/objects.h"
 //#include "math_3d.h"
 #define INTERVAL_BACKGROUND_CHANGE 1
 static int start;
 extern cy::TriMesh trimesh;
-vector<TriObj> objList;
-TriObj *tobj;
+std::vector<TriObj> objList;
+//TriObj *tobj;
 
 cy::Point3f *Vertices;
+GLfloat glvertices[18];
 GLuint vao, *VBO;
 GLuint *vbid;
-GLfloat vertice[] = { -1.0f,0.0f,0.0f,
-0.0f,1.0f,0.0f,
-0.0f,0.0f,0.0f };
+//GLfloat vertice[] = { -1.0f,0.0f,0.0f,
+//0.0f,1.0f,0.0f,
+//0.0f,0.0f,0.0f };
 
 bool LoadObj(const char *filename, bool loadMtl) {
 	TriObj *tobj = new TriObj;
-	if ( ! tobj->Load( name, mtlName==NULL ) ) {
-        printf(" -- ERROR: Cannot load file \"%s.\"", name);
+	if ( ! tobj->Load(filename, loadMtl ==NULL ) ) {
+        printf(" -- ERROR: Cannot load file \"%s.\"", filename);
         delete tobj;
         return false;
     } 
     else {
-        objList.push_back(tobj);  // add to the list
+        objList.push_back(*tobj);  // add to the list
     }    
-	//if (!trimesh.LoadFromFileObj(filename, loadMtl)) return false;
-	printf("Sucessfully load %s!", filename);
+	
+	printf("Sucessfully load %s!\n", filename);
 	//Vertices = &(trimesh.V(0));
-	Vertices = tobj.getVertices();
+	Vertices = tobj->getVertices();
 	//initGLEW();
 	return true;
 }
 
 void initGLEW() {
+	TriObj *tobj = &objList[0];
 	//generate vertex array
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
+	printf("%d vertices found in Vertices\n", tobj->getNumVertex());
 
+	for (int i = 0, j=0; i < 6; i++) {
+		glvertices[j++] = Vertices[i].x;
+		glvertices[j++] = Vertices[i].y;
+		glvertices[j++] = Vertices[i].z;
+	}
+	
 	//test
 	vbid = new GLuint[1];
 	glGenBuffers(1, vbid);
 	glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
-	glBufferData(GL_ARRAY_BUFFER, tobj.getNumVertex() * sizeof(Point3f), Vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 18* sizeof(GLfloat), glvertices, GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, tobj->getNumVertex() * sizeof(cy::Point3f), Vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 
@@ -122,7 +132,8 @@ void GLrender()
 	//glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
 	glBindVertexArray(vao);
 	glVertexAttrib3f((GLuint)1, 1.0, 0.0, 0.0);
-	glDrawArrays(GL_TRIANGLES, 0, 3);	// draw first object
+	glDrawArrays(GL_TRIANGLES, 0, 18);	// draw first object
+	//glDrawArrays(GL_TRIANGLES, 0, objList[0].getNumVertex());	// draw first object
 	//drwa stuff
 	//Render quad
 	/*

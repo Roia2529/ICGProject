@@ -1,29 +1,30 @@
 #ifndef _OBJECTS_H_INCLUDED_
 #define _OBJECTS_H_INCLUDED_
-
-#include "cyTriMesh.h"
+#include "../glHeader.h"
 
 class TriObj : public cyTriMesh
 {
+
 public:
     
     bool Load(const char *filename, bool loadMtl)
     {
-        bvh.Clear();
+        //bvh.Clear();
         if ( ! LoadFromFileObj( filename, loadMtl ) ) return false;
         if ( ! HasNormals() ) ComputeNormals();
         ComputeBoundingBox();
+		computeVerticeArray();
         //bvh.SetMesh(this,4);
         return true;
     }
 
     void computeVerticeArray(){
-        vertices = new GLfloat[NF()*3];
+        vertices = new cy::Point3f[NF()*3];
         unsigned int index = 0;
         for(unsigned int i=0; i<NF();i++){
 
             for(unsigned int j=0;j<3;j++){
-                vertices[index++] = &V( F(i).v[j] );
+                vertices[index++] = V( F(i).v[j] );
             }
         }
     }
@@ -32,12 +33,17 @@ public:
         return NF()*3;
     }
 
-    GLfloat getVertices(){
+	cy::Point3f* getVertices(){
         return vertices;
     }
+protected:
+	int current_shader = -1;
+	cy::GLSLProgram vshader;
+	cy::GLSLProgram fshader;
+
 private:
     //cyBVHTriMesh bvh;
-    Point3f *vertices;
+    cy::Point3f *vertices;
 
 };
 
