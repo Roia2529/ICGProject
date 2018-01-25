@@ -9,6 +9,7 @@
 #include "cyHeader/cyGL.h"
 #include "cyHeader/cyMatrix.h"
 
+#include <vector>
 #include <stdio.h>
 #include <ctime>
 

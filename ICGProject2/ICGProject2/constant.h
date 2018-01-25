@@ -1,3 +1,4 @@
+#pragma once
 #ifndef constant_h
 #define constant_h
 

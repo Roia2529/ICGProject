@@ -1,3 +1,4 @@
+#pragma once
 #include "glfunc.h"
 #include "Object/objects.h"
 //#include "math_3d.h"
@@ -5,15 +6,11 @@
 static int start;
 extern cy::TriMesh trimesh;
 std::vector<TriObj> objList;
-//TriObj *tobj;
 
 cy::Point3f *Vertices;
 GLfloat glvertices[18];
 GLuint vao, *VBO;
 GLuint *vbid;
-//GLfloat vertice[] = { -1.0f,0.0f,0.0f,
-//0.0f,1.0f,0.0f,
-//0.0f,0.0f,0.0f };
 
 bool LoadObj(const char *filename, bool loadMtl) {
 	TriObj *tobj = new TriObj;
@@ -33,7 +30,7 @@ bool LoadObj(const char *filename, bool loadMtl) {
 	return true;
 }
 
-void initGLEW() {
+void glBufferBind() {
 	TriObj *tobj = &objList[0];
 	//generate vertex array
 	glGenVertexArrays(1, &vao);
@@ -92,12 +89,51 @@ bool initGL()
 	return true;
 }
 
+void GLGetMouseButton(GLint button, GLint state, GLint x, GLint y) {
+		ImGui_ImplGlut_MouseCallback(button, state, x, y);
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.WantCaptureMouse) { return; }
+		static cy::Point2f p;
+		helper::mouse2screen(x, y, sysinfo::WIDTH, sysinfo::HEIGHT, p);
+		int modkey = glutGetModifiers();
+		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			if (modkey == GLUT_ACTIVE_CTRL || (modify_key == KEY_Z)) {
+				model::light.GetBall()->BeginDrag(p[0], p[1]);
+			}
+			else {
+				model::camera->GetBall()->BeginDrag(p[0], p[1]);
+			}
+			sysinfo::RotateMode = sysinfo::ROTATE;
+		}
+		else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+			if (modkey == GLUT_ACTIVE_CTRL || (modify_key == KEY_Z)) {
+				model::light.GetBall()->BeginZoom(p[0], p[1]);
+			}
+			else {
+				model::camera->GetBall()->BeginZoom(p[0], p[1]);
+			}
+			sysinfo::RotateMode = sysinfo::ZOOM;
+		}
+	}
+
+void GLGetSpecialKey(int key, int x, int y){
+	switch (key) {
+	case (GLUT_KEY_F6):
+		std::cout << "Recompiling Shaders" << std::endl;
+		//recompile
+		std::cout << "Compilation Done" << std::endl;
+		break; 	
+	default:
+		break;
+	}
+}
+
 void GLkeyboardInput(unsigned char key, int x, int y) {
 	switch (key) {
 	case 27: // ESC
 		glutLeaveMainLoop();
 		exit(0);
-		break;
+		break;	
 	default:
 		break;
 	}

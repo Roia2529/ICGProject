@@ -34,16 +34,29 @@ int main(int argc, char* args[])
 		return 1;
 	}
 	/*initialize glew*/
-	initGLEW();
 	std::cout <<"---------Instruction-----------" << std::endl;
 	std::cout << "ESC : exit" << std::endl;
 	std::cout << "left mouse : adjust camera angles" << std::endl;
 	std::cout << "right mouse : adjust camera distance" << std::endl;
 	std::cout << "F6 : recompile shader" << std::endl;
 
-	//Set rendering function
+	//Bind GLSL Prog
+	
+	//Set uniform var
+	
+	//Bind vao
+	glBufferBind();
+
+
+	//Set rendering function //glDrawArrays
 	glutDisplayFunc(GLrender); //put rendering func
+
+	//Set mouse callback
+	
+	
+	//Set keyboard callback
 	glutKeyboardFunc(GLkeyboardInput);
+	glutSpecialFunc(GLGetSpecialKey);
 
 	glutIdleFunc(GLidle);
 	//Start GLUT main loop
