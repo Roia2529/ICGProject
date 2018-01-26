@@ -7,7 +7,7 @@
 #include <time.h>
 
 bool LoadObj(const char *filename, bool loadMtl);
-
+bool glinitGLSLProgram(const char *vShaderFile, const char *fShaderFile);
 void glBufferBind();
 
 bool initGL();
@@ -21,7 +21,7 @@ void GLrender();
 
 //keyboard event
 void GLkeyboardInput(unsigned char key, int x, int y);
-void GLGetSpecialKey(int key, int x, int y)
+void GLGetSpecialKey(int key, int x, int y);
 
 void GLidle();
 

@@ -8,6 +8,7 @@
 #include "cyHeader/cyPoint.h"
 #include "cyHeader/cyGL.h"
 #include "cyHeader/cyMatrix.h"
+//#include "constant.h"
 
 #include <vector>
 #include <stdio.h>

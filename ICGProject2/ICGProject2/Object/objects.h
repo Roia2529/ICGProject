@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _OBJECTS_H_INCLUDED_
 #define _OBJECTS_H_INCLUDED_
 #include "../glHeader.h"
@@ -14,9 +15,18 @@ public:
         if ( ! HasNormals() ) ComputeNormals();
         ComputeBoundingBox();
 		computeVerticeArray();
+		printf("%d faces found in object\n", NF());
+		printf("%d vertices found in object\n", NV());
         //bvh.SetMesh(this,4);
         return true;
     }
+
+	bool initGLSLProgram(const char *vShaderFile, const char *fShaderFile) {
+		if(!glslProgram.BuildFiles(vShaderFile, fShaderFile)) return false;
+		glslProgram.Bind();
+		glslProgram.RegisterUniform(0, "mat");
+		return true;
+	}
 
     void computeVerticeArray(){
         vertices = new cy::Point3f[NF()*3];
@@ -29,18 +39,19 @@ public:
         }
     }
 
-    int getNumVertex(){
-        return NF()*3;
+    int getNumVertices(){
+        return NV();
     }
 
 	cy::Point3f* getVertices(){
-        return vertices;
+		return &V(0);
+        //return vertices;
     }
 protected:
-	int current_shader = -1;
-	cy::GLSLProgram vshader;
-	cy::GLSLProgram fshader;
-
+	cy::GLSLProgram glslProgram;
+	//cy::GLSLProgram vshader;
+	//cy::GLSLProgram fshader;
+	
 private:
     //cyBVHTriMesh bvh;
     cy::Point3f *vertices;

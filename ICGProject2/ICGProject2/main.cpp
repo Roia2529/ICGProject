@@ -17,7 +17,7 @@ int main(int argc, char* args[])
 	//GLUT_DOUBLE use 2 buffer, one is saved for new drawing, and it replace the former one when change is done.
 	glutInitDisplayMode(GLUT_DOUBLE);
 
-	glutInitWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	glutInitWindowSize(global::SCREEN_WIDTH, global::SCREEN_HEIGHT);
 	glutCreateWindow("Project 2");
 
 	GLenum res = glewInit();
@@ -40,19 +40,22 @@ int main(int argc, char* args[])
 	std::cout << "right mouse : adjust camera distance" << std::endl;
 	std::cout << "F6 : recompile shader" << std::endl;
 
-	//Bind GLSL Prog
-	
-	//Set uniform var
+	//Bind GLSL Prog and Set uniform var
+	if (!glinitGLSLProgram(global::VSHADER, global::FSHADER)) {
+		std::cerr << "load shader failed" << std::endl;
+		system("pause");
+		return 0;
+	}
 	
 	//Bind vao
 	glBufferBind();
-
 
 	//Set rendering function //glDrawArrays
 	glutDisplayFunc(GLrender); //put rendering func
 
 	//Set mouse callback
-	
+	//glutMouseFunc(icg::GetMouseButton);
+	//glutMotionFunc(icg::GetMousePosition);
 	
 	//Set keyboard callback
 	glutKeyboardFunc(GLkeyboardInput);

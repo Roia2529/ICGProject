@@ -2,7 +2,7 @@
 #include "glfunc.h"
 #include "Object/objects.h"
 //#include "math_3d.h"
-#define INTERVAL_BACKGROUND_CHANGE 1
+#pragma once
 static int start;
 extern cy::TriMesh trimesh;
 std::vector<TriObj> objList;
@@ -30,12 +30,20 @@ bool LoadObj(const char *filename, bool loadMtl) {
 	return true;
 }
 
+bool glinitGLSLProgram(const char *vShaderFile, const char *fShaderFile) {
+	if (objList[0].initGLSLProgram(vShaderFile, fShaderFile)) {
+		std::cout << "Loading Shaders done." << std::endl;
+		return true;
+	}
+	return false;
+}
+
 void glBufferBind() {
 	TriObj *tobj = &objList[0];
-	//generate vertex array
+	//generate vertex array and bind
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-	printf("%d vertices found in Vertices\n", tobj->getNumVertex());
+	//printf("%d vertices found in Vertices\n", tobj->getNumVertex());
 
 	for (int i = 0, j=0; i < 6; i++) {
 		glvertices[j++] = Vertices[i].x;
@@ -47,10 +55,9 @@ void glBufferBind() {
 	vbid = new GLuint[1];
 	glGenBuffers(1, vbid);
 	glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
-	glBufferData(GL_ARRAY_BUFFER, 18* sizeof(GLfloat), glvertices, GL_STATIC_DRAW);
-	//glBufferData(GL_ARRAY_BUFFER, tobj->getNumVertex() * sizeof(cy::Point3f), Vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getNumVertices(), tobj->getVertices(), GL_STATIC_DRAW);
+	//glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	//glEnableVertexAttribArray(0);
 
 	/*
 	VBO = new GLuint[trimesh.NV()];
@@ -90,29 +97,12 @@ bool initGL()
 }
 
 void GLGetMouseButton(GLint button, GLint state, GLint x, GLint y) {
-		ImGui_ImplGlut_MouseCallback(button, state, x, y);
-		ImGuiIO& io = ImGui::GetIO();
-		if (io.WantCaptureMouse) { return; }
-		static cy::Point2f p;
-		helper::mouse2screen(x, y, sysinfo::WIDTH, sysinfo::HEIGHT, p);
-		int modkey = glutGetModifiers();
+
 		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			if (modkey == GLUT_ACTIVE_CTRL || (modify_key == KEY_Z)) {
-				model::light.GetBall()->BeginDrag(p[0], p[1]);
-			}
-			else {
-				model::camera->GetBall()->BeginDrag(p[0], p[1]);
-			}
-			sysinfo::RotateMode = sysinfo::ROTATE;
+
 		}
 		else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-			if (modkey == GLUT_ACTIVE_CTRL || (modify_key == KEY_Z)) {
-				model::light.GetBall()->BeginZoom(p[0], p[1]);
-			}
-			else {
-				model::camera->GetBall()->BeginZoom(p[0], p[1]);
-			}
-			sysinfo::RotateMode = sysinfo::ZOOM;
+
 		}
 	}
 
