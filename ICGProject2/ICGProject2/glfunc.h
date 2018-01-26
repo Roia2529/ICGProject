@@ -3,11 +3,13 @@
 #define GLFUNC_H
 
 #include "glHeader.h"
+//#include "constant.h"
 #include <stdio.h>
 #include <time.h>
 
 bool LoadObj(const char *filename, bool loadMtl);
 bool glinitGLSLProgram(const char *vShaderFile, const char *fShaderFile);
+void prepareMatrix(GLfloat scaleinit);
 void glBufferBind();
 
 bool initGL();

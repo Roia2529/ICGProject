@@ -4,12 +4,12 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include "cyHeader/cyMatrix.h"
 #include "cyHeader/cyTriMesh.h"
 #include "cyHeader/cyPoint.h"
 #include "cyHeader/cyGL.h"
-#include "cyHeader/cyMatrix.h"
-//#include "constant.h"
 
+#include <algorithm>
 #include <vector>
 #include <stdio.h>
 #include <ctime>

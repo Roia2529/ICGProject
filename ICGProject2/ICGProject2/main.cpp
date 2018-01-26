@@ -1,6 +1,6 @@
 #include "glfunc.h"
 #include "constant.h"
-cy::TriMesh trimesh;
+GLfloat scale;
 
 int main(int argc, char* args[])
 {
@@ -10,7 +10,7 @@ int main(int argc, char* args[])
 	glutInit(&argc, args);
 
 	//Create OpenGL 2.1 context
-	glutInitContextVersion(2, 1);
+	glutInitContextVersion(3, 0);
 
 	//Create Double Buffered Window
 	//Option: GLUT_RGBA, GLUT_DEPTH, GLUT_DOUBLE
@@ -46,7 +46,9 @@ int main(int argc, char* args[])
 		system("pause");
 		return 0;
 	}
-	
+	//Set Matrix
+	prepareMatrix(global::INIT_SCALE);
+
 	//Bind vao
 	glBufferBind();
 

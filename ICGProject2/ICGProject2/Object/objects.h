@@ -7,7 +7,8 @@ class TriObj : public cyTriMesh
 {
 
 public:
-    
+	cy::GLSLProgram glslProgram;
+
     bool Load(const char *filename, bool loadMtl)
     {
         //bvh.Clear();
@@ -52,7 +53,7 @@ public:
         //return vertices;
     }
 protected:
-	cy::GLSLProgram glslProgram;
+	
 	//cy::GLSLProgram vshader;
 	//cy::GLSLProgram fshader;
 	

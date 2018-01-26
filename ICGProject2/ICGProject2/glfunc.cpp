@@ -1,17 +1,22 @@
 #pragma once
 #include "glfunc.h"
 #include "Object/objects.h"
-//#include "math_3d.h"
-#pragma once
+
+extern GLfloat scale;
+//************************//
 static int start;
-extern cy::TriMesh trimesh;
 std::vector<TriObj> objList;
 
+///----------------------//
 cy::Point3f *Vertices;
 GLfloat glvertices[18];
 GLuint vao, *VBO;
 GLuint *vbid;
 
+
+//------------------------------//
+cy::Matrix4f scale_Matrix;
+//------------------------------//
 bool LoadObj(const char *filename, bool loadMtl) {
 	TriObj *tobj = new TriObj;
 	if ( ! tobj->Load(filename, loadMtl ==NULL ) ) {
@@ -38,6 +43,12 @@ bool glinitGLSLProgram(const char *vShaderFile, const char *fShaderFile) {
 	return false;
 }
 
+void prepareMatrix(GLfloat scaleinit) {
+	scale = scaleinit;
+	scale_Matrix.SetScale(scale);
+
+}
+
 void glBufferBind() {
 	TriObj *tobj = &objList[0];
 	//generate vertex array and bind
@@ -57,19 +68,7 @@ void glBufferBind() {
 	glGenBuffers(1, vbid);
 	glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getNumVertices(), tobj->getVertices(), GL_STATIC_DRAW);
-	//glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	//glEnableVertexAttribArray(0);
 
-	/*
-	VBO = new GLuint[trimesh.NV()];
-	glGenBuffers(trimesh.NV(), VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);//
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*3, Vertices, GL_STATIC_DRAW);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f) * trimesh.NV(), Vertices, GL_STATIC_DRAW);;
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	*/
 }
 
 bool initGL()
@@ -165,6 +164,9 @@ void GLrender()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
+
+	//transformation
+	objList[0].glslProgram.SetUniform(0, scale_Matrix);
 	glDrawArrays(GL_POINTS, 0, objList[0].getNumVertices());	// draw first object
 	//glDrawArrays(GL_TRIANGLES, 0, objList[0].NF());	// draw first object
 	//drwa stuff
