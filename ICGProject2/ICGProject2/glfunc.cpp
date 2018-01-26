@@ -44,12 +44,13 @@ void glBufferBind() {
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 	//printf("%d vertices found in Vertices\n", tobj->getNumVertex());
-
+	/*
 	for (int i = 0, j=0; i < 6; i++) {
 		glvertices[j++] = Vertices[i].x;
 		glvertices[j++] = Vertices[i].y;
 		glvertices[j++] = Vertices[i].z;
 	}
+	*/
 	
 	//test
 	vbid = new GLuint[1];
@@ -154,22 +155,20 @@ void GLupdate()
 void GLrender()
 {
 	//Clear color buffer
-	glClear(GL_COLOR_BUFFER_BIT);
-	//glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+	//glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(0,0, 0, 1.0f);
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+
+	//Bind
+	objList[0].programBind();
 	glBindVertexArray(vao);
-	glVertexAttrib3f((GLuint)1, 1.0, 0.0, 0.0);
-	glDrawArrays(GL_TRIANGLES, 0, 18);	// draw first object
-	//glDrawArrays(GL_TRIANGLES, 0, objList[0].getNumVertex());	// draw first object
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
+	glDrawArrays(GL_POINTS, 0, objList[0].getNumVertices());	// draw first object
+	//glDrawArrays(GL_TRIANGLES, 0, objList[0].NF());	// draw first object
 	//drwa stuff
-	//Render quad
-	/*
-	glBegin(GL_QUADS);
-	glVertex2f(-0.5f, -0.5f);
-	glVertex2f(0.5f, -0.5f);
-	glVertex2f(0.5f, 0.5f);
-	glVertex2f(-0.5f, 0.5f);
-	glEnd();
-	*/
+
 
 	//Update screen
 	glutSwapBuffers();

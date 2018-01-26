@@ -28,6 +28,10 @@ public:
 		return true;
 	}
 
+	void programBind() {
+		glslProgram.Bind();
+	}
+
     void computeVerticeArray(){
         vertices = new cy::Point3f[NF()*3];
         unsigned int index = 0;
