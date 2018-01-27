@@ -42,6 +42,9 @@
     <ClInclude Include="Object\objects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="trackerball.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -50,12 +53,15 @@
     <ClCompile Include="glfunc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="trackerball.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\vshader.glsl">
+    <None Include="fshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Shader\fshader.glsl">
+    <None Include="vshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

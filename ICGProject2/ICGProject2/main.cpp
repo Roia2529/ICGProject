@@ -1,10 +1,11 @@
 #include "glfunc.h"
-#include "constant.h"
+glb glbv;
 GLfloat scale;
 
 int main(int argc, char* args[])
 {
 	printf("%s\n",args[1]);
+	//Load teapot
 	LoadObj(args[1],false);
 	//Initialize FreeGLUT
 	glutInit(&argc, args);
@@ -17,8 +18,8 @@ int main(int argc, char* args[])
 	//GLUT_DOUBLE use 2 buffer, one is saved for new drawing, and it replace the former one when change is done.
 	glutInitDisplayMode(GLUT_DOUBLE);
 
-	glutInitWindowSize(global::SCREEN_WIDTH, global::SCREEN_HEIGHT);
-	glutCreateWindow("Project 2");
+	glutInitWindowSize(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT);
+	glutCreateWindow("ICGProject 2");
 
 	GLenum res = glewInit();
 	if (res != GLEW_OK)
@@ -41,13 +42,13 @@ int main(int argc, char* args[])
 	std::cout << "F6 : recompile shader" << std::endl;
 
 	//Bind GLSL Prog and Set uniform var
-	if (!glinitGLSLProgram(global::VSHADER, global::FSHADER)) {
+	if (!glinitGLSLProgram(glbv.VSHADER, glbv.FSHADER)) {
 		std::cerr << "load shader failed" << std::endl;
 		system("pause");
 		return 0;
 	}
 	//Set Matrix
-	prepareMatrix(global::INIT_SCALE);
+	prepareMatrix(glbv.INIT_SCALE);
 
 	//Bind vao
 	glBufferBind();
@@ -56,8 +57,8 @@ int main(int argc, char* args[])
 	glutDisplayFunc(GLrender); //put rendering func
 
 	//Set mouse callback
-	//glutMouseFunc(icg::GetMouseButton);
-	//glutMotionFunc(icg::GetMousePosition);
+	glutMouseFunc(GLGetMouseButton);
+	glutMotionFunc(GLmouseMotion);
 	
 	//Set keyboard callback
 	glutKeyboardFunc(GLkeyboardInput);

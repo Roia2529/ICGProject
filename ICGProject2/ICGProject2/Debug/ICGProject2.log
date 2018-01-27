@@ -1,5 +1,2 @@
-﻿  main.cpp
-x:\icgproject\icgproject2\icgproject2\main.cpp(50): warning C4244: 'argument': conversion from 'const double' to 'GLfloat', possible loss of data
-  glfunc.cpp
-  Generating Code...
+﻿  trackerball.cpp
   ICGProject2.vcxproj -> X:\ICGProject\ICGProject2\Debug\ICGProject2.exe

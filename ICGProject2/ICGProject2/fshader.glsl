@@ -3,6 +3,5 @@
 out vec4 color;
 
 void main() {
-	float c = clamp(1 - gl_FragCoord.z, 0.6, 1.0);
-	color = vec4(c, c, c, 1.0f);
+	color = vec4(1.0f, 0.5f, 0.0f, 1.0f);
 }

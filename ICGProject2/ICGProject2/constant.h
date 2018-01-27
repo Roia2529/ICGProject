@@ -1,8 +1,8 @@
-#pragma once
-#ifndef constant_h
-#define constant_h
+#ifndef _CONSTANT_H
+#define _CONSTANT_H
 
-namespace global {
+class glb {
+	public:
 	const char* VSHADER = "vshader.glsl";
 	const char* FSHADER = "fshader.glsl";
 	const char* MATRIX_NAME = "mat";
@@ -11,5 +11,7 @@ namespace global {
 	const int SCREEN_HEIGHT = 480;
 
 	const double INIT_SCALE = 0.05;
-}
+	enum { ROTATE, ZOOMING }	MOVE_MODE;
+
+};
 #endif /* constant_h */

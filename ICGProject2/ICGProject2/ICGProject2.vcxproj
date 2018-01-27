@@ -134,14 +134,16 @@
     <ClInclude Include="glfunc.h" />
     <ClInclude Include="glHeader.h" />
     <ClInclude Include="Object\objects.h" />
+    <ClInclude Include="trackerball.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glfunc.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="trackerball.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\fshader.glsl" />
-    <None Include="Shader\vshader.glsl" />
+    <None Include="fshader.glsl" />
+    <None Include="vshader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
