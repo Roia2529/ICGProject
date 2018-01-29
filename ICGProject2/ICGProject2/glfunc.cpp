@@ -47,7 +47,7 @@ cy::Matrix4f pro;
 		return false;
 	}
 	void getProjection() {
-		static float znear = 1.0f, zfar = 50.0f;
+		static float znear = 0.0f, zfar = 1000.0f;
 		pro = cy::Matrix4f::MatrixPerspective(60.0f / 180.0f*cy::cyPi<float>(), (float)glbv.SCREEN_WIDTH / (float)glbv.SCREEN_HEIGHT, znear, zfar);
 	}
 
@@ -112,7 +112,7 @@ cy::Matrix4f pro;
 		}
 		else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
 			glbv.MOVE_MODE = glbv.ZOOMING;
-
+			tkball.saveBeginZoom(pos);
 		}
 	}
 
@@ -138,6 +138,7 @@ cy::Matrix4f pro;
 		case (GLUT_KEY_F6):
 			std::cout << "Recompiling Shaders" << std::endl;
 			//recompile
+			glinitGLSLProgram(glbv.VSHADER, glbv.FSHADER);
 			std::cout << "Compilation Done" << std::endl;
 			break;
 		default:
@@ -181,7 +182,7 @@ cy::Matrix4f pro;
 	{
 		//Clear color buffer
 		//glClear(GL_COLOR_BUFFER_BIT);
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(0.f, 0.f, 0.f, 1.f);//black
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Bind
@@ -193,8 +194,8 @@ cy::Matrix4f pro;
 
 		//transformation
 		cy::Matrix4f finalM;
-		//finalM = pro* tkball.getMatrix() * scale_Matrix;
-		finalM =  tkball.getMatrix() * scale_Matrix;
+		finalM = pro* tkball.getMatrix() * scale_Matrix;
+		//finalM =  tkball.getMatrix() * scale_Matrix;
 		objList[0].glslProgram.SetUniform(0, finalM);
 		glDrawArrays(GL_POINTS, 0, objList[0].getNumVertices());	// draw first object
 

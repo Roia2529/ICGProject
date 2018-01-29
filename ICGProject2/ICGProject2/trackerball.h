@@ -41,7 +41,7 @@ private:
 	cy::Point3f twodim2threedim(cy::Point2f p);
 
 	bool USE_TRACK;
-
+	float Default_distance = 2.0f;
 	float cur_dis = 0;
 	float pre_dis = 0;
 	cy::Point2f pre_dis_pos;

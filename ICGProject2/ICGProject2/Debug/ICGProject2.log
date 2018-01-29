@@ -1,2 +1,3 @@
-﻿  trackerball.cpp
+﻿  glfunc.cpp
+x:\icgproject\icgproject2\icgproject2\glfunc.cpp(121): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
   ICGProject2.vcxproj -> X:\ICGProject\ICGProject2\Debug\ICGProject2.exe

@@ -1,7 +1,8 @@
 #include "trackerball.h"
 
 cy::Matrix4f trackball::getMatrix() {
-	return cy::Matrix4f::MatrixTrans(cy::Point3f(0, 0, cur_dis - 0.0f)) * cur_matrix;
+	
+	return cy::Matrix4f::MatrixTrans(cy::Point3f(0, 0, cur_dis - Default_distance)) * cur_matrix;
 	//return cur_matrix;
 }
 
@@ -38,11 +39,14 @@ void trackball::calculateRotate(cy::Point2f p) {
 
 void trackball::saveBeginZoom(cy::Point2f p) {
 	pre_dis_pos = p;
+	//printf("save p[0]:%f, p[1]:%f\n", pre_dis_pos[0], pre_dis_pos[1]);
 	pre_dis = cur_dis;
 }
 
 void trackball::calculateZoom(cy::Point2f p) {
-	cur_dis = pre_dis + p[0] - pre_dis_pos[0];// +p[1] - pre_dis_pos[1];
+
+	cur_dis = pre_dis + p[1] - pre_dis_pos[1];// +p[1] - pre_dis_pos[1];
+	//printf("zoom dis:%f\n", cur_dis);
 }
 
 cy::Point3f trackball::twodim2threedim(cy::Point2f p) {
