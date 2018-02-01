@@ -15,7 +15,7 @@ public:
         if ( ! LoadFromFileObj( filename, loadMtl ) ) return false;
         if ( ! HasNormals() ) ComputeNormals();
         ComputeBoundingBox();
-		computeVerticeArray();
+		computeArrayData();
 		printf("%d faces found in object\n", NF());
 		printf("%d vertices found in object\n", NV());
         //bvh.SetMesh(this,4);
@@ -26,6 +26,9 @@ public:
 		if(!glslProgram.BuildFiles(vShaderFile, fShaderFile)) return false;
 		glslProgram.Bind();
 		glslProgram.RegisterUniform(0, "mat");
+
+        //for shading
+        //glslProgram.RegisterUniform(1, "mat");
 		return true;
 	}
 
@@ -33,13 +36,14 @@ public:
 		glslProgram.Bind();
 	}
 
-    void computeVerticeArray(){
-        vertices = new cy::Point3f[NF()*3];
+    void computeArrayData(){
+        vArrayPtr = new cy::Point3f[NF()*3];
         unsigned int index = 0;
         for(unsigned int i=0; i<NF();i++){
 
             for(unsigned int j=0;j<3;j++){
-                vertices[index++] = V( F(i).v[j] );
+                vArrayPtr[index] = V( F(i).v[j] );
+                nArrayPtr[index++] = VN( FN(i).v[j] );
             }
         }
     }
@@ -52,6 +56,18 @@ public:
 		return &V(0);
         //return vertices;
     }
+
+    int getvArraySize(){
+        return NF()*3;
+    }
+
+    cy::Point3f* getvArrayPtr(){
+        return vArrayPtr;
+    }
+
+    cy::Point3f* getnArrayPtr(){
+        return nArrayPtr;
+    }
 protected:
 	
 	//cy::GLSLProgram vshader;
@@ -59,7 +75,7 @@ protected:
 	
 private:
     //cyBVHTriMesh bvh;
-    cy::Point3f *vertices;
+    cy::Point3f *vArrayPtr, *nArrayPtr;
 
 };
 

@@ -67,11 +67,18 @@ cy::Matrix4f pro;
 		glBindVertexArray(vao);
 
 
-		//test
-		vbid = new GLuint[1];
-		glGenBuffers(1, vbid);
+		//2 buffer
+		vbid = new GLuint[2];
+		glGenBuffers(2, vbid);
+
+		//vertices
 		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getNumVertices(), tobj->getVertices(), GL_STATIC_DRAW);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getNumVertices(), tobj->getVertices(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getvArraySize(), tobj->getvArrayPtr(), GL_STATIC_DRAW);
+
+		//normals
+		glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getvArraySize(), tobj->getnArrayPtr(), GL_STATIC_DRAW);
 
 	}
 
@@ -186,18 +193,28 @@ cy::Matrix4f pro;
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Bind
-		objList[0].programBind();
-		glBindVertexArray(vao);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
+		{
+			objList[0].programBind();
+			glBindVertexArray(vao);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+			glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+			glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
+
+		}
+		
 
 		//transformation
 		cy::Matrix4f finalM;
 		finalM = pro* tkball.getMatrix() * scale_Matrix;
 		//finalM =  tkball.getMatrix() * scale_Matrix;
 		objList[0].glslProgram.SetUniform(0, finalM);
-		glDrawArrays(GL_POINTS, 0, objList[0].getNumVertices());	// draw first object
+		//glDrawArrays(GL_POINTS, 0, objList[0].getNumVertices());
+
+		glDrawArrays(GL_TRIANGLES, 0, objList[0].getvArraySize());
+		
 
 		//end
 		glDisableVertexAttribArray(0);
