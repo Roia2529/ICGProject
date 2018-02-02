@@ -16,7 +16,7 @@ int main(int argc, char* args[])
 	//Create Double Buffered Window
 	//Option: GLUT_RGBA, GLUT_DEPTH, GLUT_DOUBLE
 	//GLUT_DOUBLE use 2 buffer, one is saved for new drawing, and it replace the former one when change is done.
-	glutInitDisplayMode(GLUT_DOUBLE);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 
 	glutInitWindowSize(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT);
 	glutCreateWindow(glbv.TITLE);
@@ -53,6 +53,9 @@ int main(int argc, char* args[])
 	//Bind vao
 	glBufferBind();
 
+	//glutInitContextFlags(GLUT_DEBUG);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+	glEnable(GL_DEPTH_TEST | GL_CULL_FACE);
 	//Set rendering function //glDrawArrays
 	glutDisplayFunc(GLrender); //put rendering func
 

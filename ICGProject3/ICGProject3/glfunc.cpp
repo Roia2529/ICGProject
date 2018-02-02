@@ -13,7 +13,7 @@ std::vector<TriObj> objList;
 ///----------------------//
 cy::Point3f *Vertices;
 GLfloat glvertices[18];
-GLuint vao, *VBO;
+GLuint vao, *VBO, EBO;
 GLuint *vbid;
 //------------------------------//
 cy::Matrix4f scale_Matrix;
@@ -79,6 +79,12 @@ cy::Matrix4f pro;
 		//normals
 		glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getvArraySize(), tobj->getnArrayPtr(), GL_STATIC_DRAW);
+
+
+		//Element Buffer
+		//glGenBuffers(1, &EBO);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getNumVertices(), buffer.vindex_ptr, GL_STATIC_DRAW);
 
 	}
 
@@ -214,7 +220,7 @@ cy::Matrix4f pro;
 			cy::Matrix3f M_inv_trans;
 			cy::Matrix4f finalM;
 			M_wo_pro = tkball.getMatrix() * scale_Matrix;
-			M_inv_trans = M_wo_pro.GetSubMatrix3().GetInverse().GetTranspose();
+			M_inv_trans = M_wo_pro.GetSubMatrix3().GetTranspose().GetInverse();
 
 			finalM = pro * M_wo_pro;
 
@@ -224,7 +230,7 @@ cy::Matrix4f pro;
 			objList[0].glslProgram.SetUniform(1, M_inv_trans);
 			objList[0].glslProgram.SetUniform(2, M_wo_pro.GetSubMatrix3());
 			objList[0].glslProgram.SetUniform(3, light);
-			objList[0].glslProgram.SetUniform(4, 2);
+			objList[0].glslProgram.SetUniform(4, 1);
 
 		}
 		
