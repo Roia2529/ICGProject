@@ -29,6 +29,9 @@ public:
 
         //for shading
         glslProgram.RegisterUniform(1, "matInvTrans");
+        glslProgram.RegisterUniform(2, "matOrigin");
+        glslProgram.RegisterUniform(3, "lightP");
+        glslProgram.RegisterUniform(4, "colormode");
 		return true;
 	}
 

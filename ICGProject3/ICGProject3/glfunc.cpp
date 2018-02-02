@@ -218,8 +218,13 @@ cy::Matrix4f pro;
 
 			finalM = pro * M_wo_pro;
 
+			cy::Point3f light(0.0f, 10.0f, 10.0f);
+
 			objList[0].glslProgram.SetUniform(0, finalM);
 			objList[0].glslProgram.SetUniform(1, M_inv_trans);
+			objList[0].glslProgram.SetUniform(2, M_wo_pro.GetSubMatrix3());
+			objList[0].glslProgram.SetUniform(3, light);
+			objList[0].glslProgram.SetUniform(4, 2);
 
 		}
 		
