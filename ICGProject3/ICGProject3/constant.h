@@ -3,6 +3,7 @@
 
 class glb {
 	public:
+	const char*	TITLE = "ICGProject 3";
 	const char* VSHADER = "vshader.glsl";
 	const char* FSHADER = "fshader.glsl";
 	const char* MATRIX_NAME = "mat";

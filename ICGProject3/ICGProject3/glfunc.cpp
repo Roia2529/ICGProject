@@ -188,7 +188,6 @@ cy::Matrix4f pro;
 	void GLrender()
 	{
 		//Clear color buffer
-		//glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(0.f, 0.f, 0.f, 1.f);//black
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -197,29 +196,42 @@ cy::Matrix4f pro;
 			objList[0].programBind();
 			glBindVertexArray(vao);
 			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 			glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+			
+			//Bind buffer before glVertexAttribPointer
 			glEnableVertexAttribArray(1);
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 			glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+			
 
 		}
 		
-
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		//transformation
-		cy::Matrix4f finalM;
-		finalM = pro* tkball.getMatrix() * scale_Matrix;
-		//finalM =  tkball.getMatrix() * scale_Matrix;
-		objList[0].glslProgram.SetUniform(0, finalM);
+		{
+			cy::Matrix4f M_wo_pro;
+			cy::Matrix3f M_inv_trans;
+			cy::Matrix4f finalM;
+			M_wo_pro = tkball.getMatrix() * scale_Matrix;
+			M_inv_trans = M_wo_pro.GetSubMatrix3().GetInverse().GetTranspose();
+
+			finalM = pro * M_wo_pro;
+
+			objList[0].glslProgram.SetUniform(0, finalM);
+			objList[0].glslProgram.SetUniform(1, M_inv_trans);
+
+		}
+		
 		//glDrawArrays(GL_POINTS, 0, objList[0].getNumVertices());
 
 		glDrawArrays(GL_TRIANGLES, 0, objList[0].getvArraySize());
 		
 
 		//end
-		glDisableVertexAttribArray(0);
-		glBindVertexArray(0);
-		glUseProgram(0);
+		//glDisableVertexAttribArray(0);
+		//glBindVertexArray(0);
+		//glUseProgram(0);
 
 		//Update screen
 		glutSwapBuffers();

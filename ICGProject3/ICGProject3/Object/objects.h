@@ -28,7 +28,7 @@ public:
 		glslProgram.RegisterUniform(0, "mat");
 
         //for shading
-        //glslProgram.RegisterUniform(1, "mat");
+        glslProgram.RegisterUniform(1, "matInvTrans");
 		return true;
 	}
 
@@ -38,14 +38,17 @@ public:
 
     void computeArrayData(){
         vArrayPtr = new cy::Point3f[NF()*3];
+		nArrayPtr = new cy::Point3f[NF() * 3];
         unsigned int index = 0;
         for(unsigned int i=0; i<NF();i++){
 
             for(unsigned int j=0;j<3;j++){
-                vArrayPtr[index] = V( F(i).v[j] );
+               vArrayPtr[index] = V( F(i).v[j] );
+			   //printf("point FN(i).v[j]: %d\n", FN(i).v[j]);
                 nArrayPtr[index++] = VN( FN(i).v[j] );
             }
         }
+		printf("index: %d\n", index);
     }
 
     int getNumVertices(){
@@ -75,6 +78,7 @@ protected:
 	
 private:
     //cyBVHTriMesh bvh;
+	//std::vector<cy::Point3f> vArrayPtr, nArrayPtr;
     cy::Point3f *vArrayPtr, *nArrayPtr;
 
 };

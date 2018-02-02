@@ -19,7 +19,7 @@ int main(int argc, char* args[])
 	glutInitDisplayMode(GLUT_DOUBLE);
 
 	glutInitWindowSize(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT);
-	glutCreateWindow("ICGProject 2");
+	glutCreateWindow(glbv.TITLE);
 
 	GLenum res = glewInit();
 	if (res != GLEW_OK)
