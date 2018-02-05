@@ -11,9 +11,9 @@ const vec3 kd = vec3(0.8f, 0.2f, 0.2f);
 const vec3 ks = vec3(1.0f, 1.0f, 1.0f);
 const float alpha = 5.0;
 const float gamma = 1.2;
-const vec3 ambientC = vec3(0.2f, 0.2f, 0.2f);
-const vec3 specularC = vec3(1.0f, 1.0f, 1.0f);
-const vec3 diffuseC = vec3(0.5f, 0.5f, 0.5f);
+const vec3 ambientL = vec3(0.2f, 0.2f, 0.2f);
+const vec3 specularL = vec3(1.0f, 1.0f, 1.0f);
+const vec3 diffuseL = vec3(1.0f, 1.0f, 1.0f);
 
 void main() {
 	if(colormode==1){
@@ -28,8 +28,9 @@ void main() {
 		float costheta = max(0.0f, dot(N, L));
 		float cosHN = max(0.0f, dot(H, N));
 
-		vec3 ambient =  ambientC * kd;
-		vec3 diffuse = kd * specularC * costheta;
-		color = vec4(ambient+diffuse,1.0f);
+		vec3 ambientC =  ambientL * kd;
+		vec3 diffuseC = kd * diffuseL * costheta;
+		vec3 specularC = ks * specularL * pow(cosHN, alpha);
+		color = vec4(ambientC + diffuseC + specularC ,1.0f);
 	}
 }

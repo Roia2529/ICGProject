@@ -49,3 +49,4 @@ private:
 };
 
 extern trackball tkball;
+extern trackball light;

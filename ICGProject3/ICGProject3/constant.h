@@ -11,7 +11,7 @@ class glb {
 	const int SCREEN_WIDTH = 640;
 	const int SCREEN_HEIGHT = 480;
 
-	const bool USE_ELEMT = true;
+	const bool USE_ELEMT = false;
 
 	const double INIT_SCALE = 0.05;
 	enum { ROTATE, ZOOMING }	MOVE_MODE;

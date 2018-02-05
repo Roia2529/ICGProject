@@ -11,13 +11,12 @@ int main(int argc, char* args[])
 	glutInit(&argc, args);
 
 	//Create OpenGL 2.1 context
-	glutInitContextVersion(3, 0);
+	//glutInitContextVersion(3, 0);
 
 	//Create Double Buffered Window
 	//Option: GLUT_RGBA, GLUT_DEPTH, GLUT_DOUBLE
 	//GLUT_DOUBLE use 2 buffer, one is saved for new drawing, and it replace the former one when change is done.
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-
 	glutInitWindowSize(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT);
 	glutCreateWindow(glbv.TITLE);
 
@@ -29,11 +28,15 @@ int main(int argc, char* args[])
 	}
 
 	//Do post window/context creation initialization
+	//
+	/*
 	if (!initGL())
 	{
 		printf("Unable to initialize graphics library!\n");
 		return 1;
 	}
+	*/
+
 	/*initialize glew*/
 	std::cout <<"---------Instruction-----------" << std::endl;
 	std::cout << "ESC : exit" << std::endl;
@@ -54,8 +57,9 @@ int main(int argc, char* args[])
 	glBufferBind();
 
 	//glutInitContextFlags(GLUT_DEBUG);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+	//glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glEnable(GL_DEPTH_TEST | GL_CULL_FACE);
+
 	//Set rendering function //glDrawArrays
 	glutDisplayFunc(GLrender); //put rendering func
 
@@ -72,5 +76,5 @@ int main(int argc, char* args[])
 	//This runs freeGLUT's internal main loop not our main loop.
 	glutMainLoop();
 
-	return 0;
+	return EXIT_SUCCESS;
 }

@@ -7,6 +7,7 @@ extern glb glbv;
 extern GLfloat scale;
 //***********************//
 trackball tkball;
+trackball light;
 //***********************//
 static int start;
 std::vector<TriObj> objList;
@@ -90,7 +91,7 @@ cy::Matrix4f pro;
 
 	bool initGL()
 	{
-		start = (int)time(NULL);;
+		//start = (int)time(NULL);;
 		//Initialize Projection Matrix
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -100,7 +101,7 @@ cy::Matrix4f pro;
 		glLoadIdentity();
 
 
-										 //Check for error
+		//Check for error
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
 		{
@@ -121,7 +122,14 @@ cy::Matrix4f pro;
 		tkball.mpos2window(x,y,(float)glbv.SCREEN_WIDTH, (float)glbv.SCREEN_HEIGHT,pos);
 		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			glbv.MOVE_MODE = glbv.ROTATE;
-			tkball.saveBeginRotate(pos);
+			int modifier = glutGetModifiers();
+			if(modifier==GLUT_ACTIVE_CTRL){
+				light.saveBeginRotate(pos);
+			}
+			else{
+				
+				tkball.saveBeginRotate(pos);
+			}
 		}
 		else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
 			glbv.MOVE_MODE = glbv.ZOOMING;
@@ -135,7 +143,11 @@ cy::Matrix4f pro;
 		switch (glbv.MOVE_MODE)
 		{
 		case glbv.ROTATE:
-			tkball.calculateRotate(pos);
+			int modifier = glutGetModifiers();
+			if(modifier==GLUT_ACTIVE_CTRL)
+				light.calculateRotate(pos);
+			else
+				tkball.calculateRotate(pos);
 			break;
 		case glbv.ZOOMING:
 			tkball.calculateZoom(pos);

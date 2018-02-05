@@ -24,7 +24,6 @@ void trackball::calculateRotate(cy::Point2f p) {
 
 		//cy::Matrix4f rotateTheta;
 		rotateTheta.SetRotation(N, theta);
-		//cur_matrix = rotateTheta * pre_matrix;
 	}
 	else {
 		//x
