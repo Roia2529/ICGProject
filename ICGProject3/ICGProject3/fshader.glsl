@@ -17,7 +17,7 @@ const vec3 diffuseL = vec3(1.0f, 1.0f, 1.0f);
 
 void main() {
 	if(colormode==1){
-		color = vec4(normalize(faceN), 1.0f);
+		color = vec4(clamp(normalize(faceN),0.0,1.0), 1.0f);
 	}
 	else if(colormode==2){
 		vec3 N = normalize(faceN);
@@ -30,7 +30,7 @@ void main() {
 
 		vec3 ambientC =  ambientL * kd;
 		vec3 diffuseC = kd * diffuseL * costheta;
-		vec3 specularC = ks * specularL * pow(cosHN, alpha);
+		vec3 specularC = ks * specularL * costheta * pow(cosHN, alpha);
 		color = vec4(ambientC + diffuseC + specularC ,1.0f);
 	}
 }

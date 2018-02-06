@@ -10,15 +10,20 @@ int main(int argc, char* args[])
 	//Initialize FreeGLUT
 	glutInit(&argc, args);
 
-	//Create OpenGL 2.1 context
-	//glutInitContextVersion(3, 0);
-
 	//Create Double Buffered Window
 	//Option: GLUT_RGBA, GLUT_DEPTH, GLUT_DOUBLE
 	//GLUT_DOUBLE use 2 buffer, one is saved for new drawing, and it replace the former one when change is done.
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+	
 	glutInitWindowSize(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT);
 	glutCreateWindow(glbv.TITLE);
+	//glEnable(GL_DEPTH_TEST);
+
+	glutInitContextFlags(GLUT_DEBUG);
+	glutInitDisplayMode(GLUT_DEPTH | GLUT_RGBA | GLUT_DOUBLE);
+	//glEnable(GL_DEPTH_TEST | GL_CULL_FACE);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_DEPTH_TEST);
 
 	GLenum res = glewInit();
 	if (res != GLEW_OK)
@@ -40,25 +45,12 @@ int main(int argc, char* args[])
 	/*initialize glew*/
 	std::cout <<"---------Instruction-----------" << std::endl;
 	std::cout << "ESC : exit" << std::endl;
-	std::cout << "left mouse : adjust camera angles" << std::endl;
-	std::cout << "right mouse : adjust camera distance" << std::endl;
+	std::cout << "left mouse : adjust angles" << std::endl;
+	std::cout << "right mouse : adjust distance" << std::endl;
+	std::cout << "CTRL : Press CTRL to move light position by mouse" << std::endl;
 	std::cout << "F6 : recompile shader" << std::endl;
+	std::cout << "------------------------------" << std::endl;
 
-	//Bind GLSL Prog and Set uniform var
-	if (!glinitGLSLProgram(glbv.VSHADER, glbv.FSHADER)) {
-		std::cerr << "load shader failed" << std::endl;
-		system("pause");
-		return 0;
-	}
-	//Set Matrix
-	prepareMatrix(glbv.INIT_SCALE);
-
-	//Bind vao
-	glBufferBind();
-
-	//glutInitContextFlags(GLUT_DEBUG);
-	//glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-	glEnable(GL_DEPTH_TEST | GL_CULL_FACE);
 
 	//Set rendering function //glDrawArrays
 	glutDisplayFunc(GLrender); //put rendering func
@@ -74,6 +66,21 @@ int main(int argc, char* args[])
 	glutIdleFunc(GLidle);
 	//Start GLUT main loop
 	//This runs freeGLUT's internal main loop not our main loop.
+
+	//Bind GLSL Prog and Set uniform var
+	if (!glinitGLSLProgram(glbv.VSHADER, glbv.FSHADER)) {
+		//CY_GL_REGISTER_DEBUG_CALLBACK;
+		std::cerr << "load shader failed" << std::endl;
+		system("pause");
+		return 0;
+	}
+
+	//Set Matrix
+	prepareMatrix(glbv.INIT_SCALE);
+
+	//Bind vao
+	glBufferBind();
+
 	glutMainLoop();
 
 	return EXIT_SUCCESS;

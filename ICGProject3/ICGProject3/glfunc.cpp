@@ -48,7 +48,7 @@ cy::Matrix4f pro;
 		return false;
 	}
 	void getProjection() {
-		static float znear = 0.0f, zfar = 1000.0f;
+		static float znear = 0.1f, zfar = 1000.0f;
 		pro = cy::Matrix4f::MatrixPerspective(60.0f / 180.0f*cy::cyPi<float>(), (float)glbv.SCREEN_WIDTH / (float)glbv.SCREEN_HEIGHT, znear, zfar);
 	}
 
@@ -140,10 +140,10 @@ cy::Matrix4f pro;
 	void GLmouseMotion(GLint x, GLint y) {
 		cy::Point2f pos;
 		tkball.mpos2window(x, y, glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT, pos);
+		int modifier = glutGetModifiers();
 		switch (glbv.MOVE_MODE)
 		{
 		case glbv.ROTATE:
-			int modifier = glutGetModifiers();
 			if(modifier==GLUT_ACTIVE_CTRL)
 				light.calculateRotate(pos);
 			else
@@ -206,13 +206,14 @@ cy::Matrix4f pro;
 	void GLrender()
 	{
 		//Clear color buffer
-		glClearColor(0.f, 0.f, 0.f, 1.f);//black
+		glClearColor(0.f, 0.f, 0.f, 0.f);//black
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Bind
 		{
 			objList[0].programBind();
 			glBindVertexArray(vao);
+
 			glEnableVertexAttribArray(0);
 			glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -221,10 +222,8 @@ cy::Matrix4f pro;
 			glEnableVertexAttribArray(1);
 			glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
 			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-			
-
 		}
-		
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		//transformation
 		{
@@ -236,19 +235,21 @@ cy::Matrix4f pro;
 
 			finalM = pro * M_wo_pro;
 
-			cy::Point3f light(0.0f, 10.0f, 10.0f);
-
+			cy::Point3f lightpos(10.0f, 10.0f, 10.0f);
+			cy::Point3f newlightpos = tkball.getMatrix().GetSubMatrix3()*light.getMatrix().GetSubMatrix3()*lightpos;
 			objList[0].glslProgram.SetUniform(0, finalM);
 			objList[0].glslProgram.SetUniform(1, M_inv_trans);
 			objList[0].glslProgram.SetUniform(2, M_wo_pro.GetSubMatrix3());
-			objList[0].glslProgram.SetUniform(3, light);
-			objList[0].glslProgram.SetUniform(4, 1);
+			objList[0].glslProgram.SetUniform(3, newlightpos);
+			//objList[0].glslProgram.SetUniform(3, lightpos);
+			objList[0].glslProgram.SetUniform(4, 2);
 
 		}
 		
 		//glDrawArrays(GL_POINTS, 0, objList[0].getNumVertices());
 
 		glDrawArrays(GL_TRIANGLES, 0, objList[0].getvArraySize());
+		//CY_GL_REGISTER_DEBUG_CALLBACK;
 		
 
 		//end
