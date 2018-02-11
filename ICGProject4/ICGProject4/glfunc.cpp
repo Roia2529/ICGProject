@@ -46,7 +46,7 @@ cy::Matrix4f pro;
 		return false;
 	}
 	void getProjection() {
-		static float znear = 0.1f, zfar = 1000.0f;
+		static float znear = 0.01f, zfar = 1000.0f;
 		pro = cy::Matrix4f::MatrixPerspective(60.0f / 180.0f*cy::cyPi<float>(), (float)glbv.SCREEN_WIDTH / (float)glbv.SCREEN_HEIGHT, znear, zfar);
 	}
 
@@ -55,7 +55,7 @@ cy::Matrix4f pro;
 		scale_Matrix.SetScale(scale);
 
 		//put teapot in the center
-		scale_Matrix.AddTrans((objList[0].GetBoundMin() + objList[0].GetBoundMax())*scale*-0.5);
+		scale_Matrix.AddTrans((objList[0].GetBoundMin() + objList[0].GetBoundMax())*scale*(-0.5));
 		getProjection();
 	}
 
@@ -89,17 +89,6 @@ cy::Matrix4f pro;
 		//glGenBuffers(1, &EBO);
 		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getNumVertices(), buffer.vindex_ptr, GL_STATIC_DRAW);
-
-		/*
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		*/
-
-		//glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		//glEnableVertexAttribArray(2);
 		
 	}
 
@@ -226,7 +215,7 @@ cy::Matrix4f pro;
 	void GLrender()
 	{
 		//Clear color buffer
-		glClearColor(0.f, 0.f, 0.f, 0.f);//black
+		glClearColor(0.5f, 0.5f, 0.5f, 0.f);//black
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Bind
@@ -261,23 +250,42 @@ cy::Matrix4f pro;
 
 			finalM = pro * M_wo_pro;
 
-			cy::Point3f lightpos(10.0f, 10.0f, 10.0f);
+			cy::Point3f lightpos(0.0, 0.0f, 10.0f);
 			cy::Point3f newlightpos = tkball.getMatrix().GetSubMatrix3()*light.getMatrix().GetSubMatrix3()*lightpos;
-			objList[0].glslProgram.SetUniform(0, finalM);
-			objList[0].glslProgram.SetUniform(1, M_inv_trans);
-			objList[0].glslProgram.SetUniform(2, M_wo_pro.GetSubMatrix3());
-			objList[0].glslProgram.SetUniform(3, newlightpos);
-			//objList[0].glslProgram.SetUniform(3, lightpos);
-			objList[0].glslProgram.SetUniform(4, 0);
-			objList[0].textureBind();
-			objList[0].glslProgram.SetUniform(5, glbv.COLOR_MODE);
+
+			for (int i = 0; i < objList[0].NM(); i++) {
+
+				objList[0].glslProgram.SetUniform(0, finalM);
+				objList[0].glslProgram.SetUniform(1, M_inv_trans);
+				objList[0].glslProgram.SetUniform(2, M_wo_pro.GetSubMatrix3());
+				objList[0].glslProgram.SetUniform(3, newlightpos);
+
+				objList[0].glslProgram.SetUniform(4, 0);
+				objList[0].textureBind(i, 0, 0);
+				objList[0].glslProgram.SetUniform(5, 1);
+				objList[0].textureBind(i, 1, 1);
+				objList[0].glslProgram.SetUniform(6, 2);
+				objList[0].textureBind(i, 2, 2);
+
+				objList[0].glslProgram.SetUniform(7, objList[0].hasTextureKa(i));
+				objList[0].glslProgram.SetUniform(8, objList[0].hasTextureKd(i));
+				objList[0].glslProgram.SetUniform(9, objList[0].hasTextureKs(i));
+
+				objList[0].glslProgram.SetUniform(10, objList[0].getMtlKa(i));
+				objList[0].glslProgram.SetUniform(11, objList[0].getMtlKd(i));
+				objList[0].glslProgram.SetUniform(12, objList[0].getMtlKs(i));
+
+				objList[0].glslProgram.SetUniform(13, glbv.COLOR_MODE);
+
+				glDrawArrays(GL_TRIANGLES, objList[0].GetMaterialFirstFace(i) * 3, objList[0].GetMaterialFaceCount(i) * 3);
+			}
+			
 
 		}
 		
-		//glDrawArrays(GL_POINTS, 0, objList[0].getNumVertices());
+		
 
-		glDrawArrays(GL_TRIANGLES, 0, objList[0].getvArraySize());
-		//CY_GL_REGISTER_DEBUG_CALLBACK;
+		//glDrawArrays(GL_TRIANGLES, 0, objList[0].getvArraySize());
 		
 
 		//end
@@ -286,5 +294,6 @@ cy::Matrix4f pro;
 		//glUseProgram(0);
 
 		//Update screen
+		CY_GL_REGISTER_DEBUG_CALLBACK;
 		glutSwapBuffers();
 	}

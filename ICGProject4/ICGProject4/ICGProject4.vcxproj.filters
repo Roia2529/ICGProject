@@ -48,6 +48,9 @@
     <ClInclude Include="loadpng\lodepng.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Object\Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -70,7 +73,10 @@
     <None Include="vshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\teapot.mtl">
+    <None Include="teapot.mtl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="yoda.mtl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

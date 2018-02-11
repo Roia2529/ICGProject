@@ -138,6 +138,7 @@
     <ClInclude Include="glfunc.h" />
     <ClInclude Include="glHeader.h" />
     <ClInclude Include="loadpng\lodepng.h" />
+    <ClInclude Include="Object\Material.h" />
     <ClInclude Include="Object\objects.h" />
     <ClInclude Include="trackerball.h" />
   </ItemGroup>
@@ -148,9 +149,10 @@
     <ClCompile Include="trackerball.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\teapot.mtl" />
     <None Include="fshader.glsl" />
+    <None Include="teapot.mtl" />
     <None Include="vshader.glsl" />
+    <None Include="yoda.mtl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
