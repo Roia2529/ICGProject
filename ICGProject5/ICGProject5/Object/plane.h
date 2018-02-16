@@ -27,8 +27,7 @@ public:
 		glslProgram.RegisterUniform(0, "mat");
 
 		//for shading
-		glslProgram.RegisterUniform(1, "matInvTrans");
-		glslProgram.RegisterUniform(2, "matOrigin");
+		glslProgram.RegisterUniform(1, "Tmap_kd");
 
 		CY_GL_REGISTER_DEBUG_CALLBACK;
 		return true;

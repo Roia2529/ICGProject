@@ -77,13 +77,14 @@ int main(int argc, char* args[])
 	}
 
 	//Bind GLSL Prog and Set uniform var
-	if (!glinitGLRenderTexture(glbv.P_VSHADER, glbv.P_FSHADER)) {
+	if (!glinitRT_GLSLProgram(glbv.P_VSHADER, glbv.P_FSHADER)) {
 		//CY_GL_REGISTER_DEBUG_CALLBACK;
 		std::cerr << "load shader failed" << std::endl;
 		system("pause");
 		return 0;
 	}
-
+	if (!initGLRenderTexture(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT)) 
+		std::cerr << "Initialize texture buffer failed" << std::endl;
 
 	//Set Matrix
 	prepareMatrix(glbv.INIT_SCALE);

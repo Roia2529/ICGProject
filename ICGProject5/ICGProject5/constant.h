@@ -17,8 +17,8 @@ class glb {
 
 	const bool USE_ELEMT = false;
 
-	const double INIT_SCALE = 0.0007;
-	//const double INIT_SCALE = 0.005;
+	//const double INIT_SCALE = 0.0007;
+	const double INIT_SCALE = 0.05;
 
 	const int COLOR_MODE = 3;
 	enum { ROTATE, ZOOMING }	MOVE_MODE;

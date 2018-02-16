@@ -9,6 +9,7 @@ extern GLfloat scale;
 //***********************//
 trackball tkball;
 trackball light;
+trackball tkball_plane;
 //***********************//
 static int start;
 
@@ -22,6 +23,7 @@ GLuint vao_p;
 GLuint *vbid_p;
 //------------------------------//
 cy::Matrix4f scale_Matrix;
+cy::Matrix4f p_scale_Matrix;
 cy::Matrix4f pro;
 //------------------------------//
 cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
@@ -73,6 +75,9 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		//put teapot in the center
 		scale_Matrix.AddTrans((objList[0].GetBoundMin() + objList[0].GetBoundMax())*scale*(-0.5));
 		getProjection();
+
+		p_scale_Matrix.SetScale(0.8);
+
 	}
 
 	void glBufferBind() {
@@ -109,7 +114,8 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		glGenBuffers(1, vbid_p);
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbid_p[0]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*plane.getvArraySize, plane.getvArrayPtr, GL_STATIC_DRAW);
+		printf("array size: %d",plane.getvArraySize());
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*plane.getvArraySize(), plane.getvArrayPtr(), GL_STATIC_DRAW);
 
 	}
 	
@@ -263,7 +269,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		//transformation
-		
+		{
 			cy::Matrix4f M_wo_pro;
 			cy::Matrix3f M_inv_trans;
 			cy::Matrix4f finalM;
@@ -301,10 +307,41 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 
 				glDrawArrays(GL_TRIANGLES, objList[0].GetMaterialFirstFace(i) * 3, objList[0].GetMaterialFaceCount(i) * 3);
 			}
-			
+		}
 
 		
+		glrenderT.Unbind();
+		//Bind
+		{
+			plane.programBind();
 
+			glBindVertexArray(vao_p);
+			glEnableVertexAttribArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, vbid_p[0]);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+			glrenderT.BuildTextureMipmaps();
+		}
+		
+		{
+			cy::Matrix4f M_wo_pro;
+			//cy::Matrix3f M_inv_trans;
+			cy::Matrix4f finalM;
+			M_wo_pro = tkball_plane.getMatrix() * p_scale_Matrix;
+			//M_inv_trans = M_wo_pro.GetSubMatrix3().GetTranspose().GetInverse();
+
+			finalM = pro * M_wo_pro;
+
+			plane.glslProgram.SetUniform(0, finalM);
+			//plane.glslProgram.SetUniform(1, M_wo_pro.GetSubMatrix3());
+			plane.glslProgram.SetUniform(1, 3);
+			glrenderT.BindTexture(3);
+		}
+
+		//Clear color buffer
+		glClearColor(0.0f, 0.0f, 0.0f, 0.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		
 
 		//Update screen
 		CY_GL_REGISTER_DEBUG_CALLBACK;
