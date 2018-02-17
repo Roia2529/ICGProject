@@ -7,5 +7,5 @@ uniform mat4 mat;
 
 void main() {
 	gl_Position = mat * vec4(position, 1.0f);
-	posT = vec2((position.x+1)/2, (position.y+1)/2);
+	posT = vec2(position.x / 2 + 0.5, position.y / 2 + 0.5);
 }

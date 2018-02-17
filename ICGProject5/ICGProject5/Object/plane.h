@@ -14,22 +14,15 @@ public:
 
 	}
 
-	void textureBind(int mid, int mapid, int bid) {
-		//material[mid].textureMap[mapid].gltexture.Bind(bid);
-		/*for (unsigned int i = 0; i < NM(); i++) {
-		diffuse_Texture.Bind();
-		}*/
-	}
-
 	bool initGLSLProgram(const char *vShaderFile, const char *fShaderFile) {
 		if (!glslProgram.BuildFiles(vShaderFile, fShaderFile)) return false;
 		glslProgram.Bind();
 		glslProgram.RegisterUniform(0, "mat");
 
 		//for shading
-		glslProgram.RegisterUniform(1, "Tmap_kd");
+		glslProgram.RegisterUniform(1, "Texturemap");
 
-		CY_GL_REGISTER_DEBUG_CALLBACK;
+		//CY_GL_REGISTER_DEBUG_CALLBACK;
 		return true;
 	}
 

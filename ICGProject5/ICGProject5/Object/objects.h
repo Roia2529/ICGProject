@@ -144,19 +144,26 @@ public:
         glslProgram.RegisterUniform(1, "matInvTrans");
         glslProgram.RegisterUniform(2, "matOrigin");
         glslProgram.RegisterUniform(3, "lightP");
-		glslProgram.RegisterUniform(4, "Tmap_ka");
-		glslProgram.RegisterUniform(5, "Tmap_kd");
-		glslProgram.RegisterUniform(6, "Tmap_ks");
 		
-		glslProgram.RegisterUniform(7, "Use_Tmap_ka");
-		glslProgram.RegisterUniform(8, "Use_Tmap_kd");
-		glslProgram.RegisterUniform(9, "Use_Tmap_ks");
+		glslProgram.RegisterUniform(4, "Mtl_ka");
+		glslProgram.RegisterUniform(5, "Mtl_kd");
+		glslProgram.RegisterUniform(6, "Mtl_ks");
 
-		glslProgram.RegisterUniform(10, "Mtl_ka");
-		glslProgram.RegisterUniform(11, "Mtl_kd");
-		glslProgram.RegisterUniform(12, "Mtl_ks");
+		glslProgram.RegisterUniform(7, "colormode");
 
-        glslProgram.RegisterUniform(13, "colormode");
+		
+			if (USE_TEXTURE)
+			{
+				glslProgram.RegisterUniform(8, "Tmap_ka");
+				glslProgram.RegisterUniform(9, "Tmap_kd");
+				glslProgram.RegisterUniform(10, "Tmap_ks");
+
+				glslProgram.RegisterUniform(11, "Use_Tmap_ka");
+				glslProgram.RegisterUniform(12, "Use_Tmap_kd");
+				glslProgram.RegisterUniform(13, "Use_Tmap_ks");
+			}
+
+		
 		CY_GL_REGISTER_DEBUG_CALLBACK;
 		return true;
 	}
@@ -222,6 +229,8 @@ private:
 	//std::vector<unsigned char> texture_data;
 
 	Material *material;
+
+	bool USE_TEXTURE = false;
 };
 
 //-------------------------------------------------------------------------------

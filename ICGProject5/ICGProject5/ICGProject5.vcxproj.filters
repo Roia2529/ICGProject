@@ -88,5 +88,11 @@
     <None Include="plane_vshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="fshader.notex.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="vshader.notex.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

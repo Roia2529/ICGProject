@@ -27,6 +27,7 @@ cy::Matrix4f p_scale_Matrix;
 cy::Matrix4f pro;
 //------------------------------//
 cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
+//cy::GLRenderBuffer<GL_TEXTURE_2D> glrenderT;
 //------------------------------//
 
 	bool LoadObj(const char *filename, bool loadMtl) {
@@ -101,11 +102,14 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getvArraySize(), tobj->getnArrayPtr(), GL_STATIC_DRAW);
 
 		//texture
-		tobj->initTexture();
-		glBindBuffer(GL_ARRAY_BUFFER, vbid[2]);
+		if (glbv.USE_TEXTURE)
+		{
+			tobj->initTexture();
+			glBindBuffer(GL_ARRAY_BUFFER, vbid[2]);
 
-		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getvArraySize(), tobj->gettArrayPtr(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getvArraySize(), tobj->gettArrayPtr(), GL_STATIC_DRAW);
 
+		}
 		//Plane
 		glGenVertexArrays(1, &vao_p);
 		glBindVertexArray(vao_p);
@@ -114,7 +118,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		glGenBuffers(1, vbid_p);
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbid_p[0]);
-		printf("array size: %d",plane.getvArraySize());
+		//printf("array size: %d",plane.getvArraySize());
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*plane.getvArraySize(), plane.getvArrayPtr(), GL_STATIC_DRAW);
 
 	}
@@ -122,7 +126,8 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 	bool initGLRenderTexture(int width, int height) {
 		if (glrenderT.Initialize(true, 4, width, height)) {
 			glrenderT.SetTextureMaxAnisotropy();
-			glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
+			//glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
+			glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_NEAREST_MIPMAP_NEAREST);
 			return true;
 		}
 		return false;
@@ -242,7 +247,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 	void GLrender()
 	{
 		//Clear color buffer
-		glClearColor(0.5f, 0.5f, 0.5f, 0.f);
+		glClearColor(0.8f, 0.5f, 0.5f, 0.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glrenderT.Bind();
@@ -261,12 +266,16 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 			glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
 			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-			glEnableVertexAttribArray(2);
-			glBindBuffer(GL_ARRAY_BUFFER, vbid[2]);
-			glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+			if (glbv.USE_TEXTURE)
+			{
+				glEnableVertexAttribArray(2);
+				glBindBuffer(GL_ARRAY_BUFFER, vbid[2]);
+				glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+			}
 			
 		}
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		//transformation
 		{
@@ -281,36 +290,47 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 			cy::Point3f lightpos(0.0, 0.0f, 10.0f);
 			cy::Point3f newlightpos = tkball.getMatrix().GetSubMatrix3()*light.getMatrix().GetSubMatrix3()*lightpos;
 
-			for (int i = 0; i < objList[0].NM(); i++) {
+			for (unsigned int i = 0; i < objList[0].NM(); i++) {
 
 				objList[0].glslProgram.SetUniform(0, finalM);
 				objList[0].glslProgram.SetUniform(1, M_inv_trans);
 				objList[0].glslProgram.SetUniform(2, M_wo_pro.GetSubMatrix3());
 				objList[0].glslProgram.SetUniform(3, newlightpos);
 
-				objList[0].glslProgram.SetUniform(4, 0);
-				objList[0].textureBind(i, 0, 0);
-				objList[0].glslProgram.SetUniform(5, 1);
-				objList[0].textureBind(i, 1, 1);
-				objList[0].glslProgram.SetUniform(6, 2);
-				objList[0].textureBind(i, 2, 2);
+				objList[0].glslProgram.SetUniform(4, objList[0].getMtlKa(i));
+				objList[0].glslProgram.SetUniform(5, objList[0].getMtlKd(i));
+				objList[0].glslProgram.SetUniform(6, objList[0].getMtlKs(i));
 
-				objList[0].glslProgram.SetUniform(7, objList[0].hasTextureKa(i));
-				objList[0].glslProgram.SetUniform(8, objList[0].hasTextureKd(i));
-				objList[0].glslProgram.SetUniform(9, objList[0].hasTextureKs(i));
+				objList[0].glslProgram.SetUniform(7, glbv.COLOR_MODE);
 
-				objList[0].glslProgram.SetUniform(10, objList[0].getMtlKa(i));
-				objList[0].glslProgram.SetUniform(11, objList[0].getMtlKd(i));
-				objList[0].glslProgram.SetUniform(12, objList[0].getMtlKs(i));
 
-				objList[0].glslProgram.SetUniform(13, glbv.COLOR_MODE);
+				if (glbv.USE_TEXTURE)
+				{
+					objList[0].glslProgram.SetUniform(8, 0);
+					objList[0].textureBind(i, 0, 0);
+					objList[0].glslProgram.SetUniform(9, 1);
+					objList[0].textureBind(i, 1, 1);
+					objList[0].glslProgram.SetUniform(10, 2);
+					objList[0].textureBind(i, 2, 2);
 
+					objList[0].glslProgram.SetUniform(11, objList[0].hasTextureKa(i));
+					objList[0].glslProgram.SetUniform(12, objList[0].hasTextureKd(i));
+					objList[0].glslProgram.SetUniform(13, objList[0].hasTextureKs(i));
+				}
+				
 				glDrawArrays(GL_TRIANGLES, objList[0].GetMaterialFirstFace(i) * 3, objList[0].GetMaterialFaceCount(i) * 3);
+
+				glDisableVertexAttribArray(0);
+				glDisableVertexAttribArray(1);
+				if(glbv.USE_TEXTURE)
+					glDisableVertexAttribArray(2);
 			}
 		}
 
-		
 		glrenderT.Unbind();
+		//Clear color buffer
+		glClearColor(0.0f, 0.0f, 0.0f, 0.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//Bind
 		{
 			plane.programBind();
@@ -319,28 +339,25 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 			glEnableVertexAttribArray(0);
 			glBindBuffer(GL_ARRAY_BUFFER, vbid_p[0]);
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+			glrenderT.BindTexture(0);
 			glrenderT.BuildTextureMipmaps();
 		}
 		
 		{
 			cy::Matrix4f M_wo_pro;
-			//cy::Matrix3f M_inv_trans;
 			cy::Matrix4f finalM;
 			M_wo_pro = tkball_plane.getMatrix() * p_scale_Matrix;
-			//M_inv_trans = M_wo_pro.GetSubMatrix3().GetTranspose().GetInverse();
-
 			finalM = pro * M_wo_pro;
 
 			plane.glslProgram.SetUniform(0, finalM);
-			//plane.glslProgram.SetUniform(1, M_wo_pro.GetSubMatrix3());
-			plane.glslProgram.SetUniform(1, 3);
-			glrenderT.BindTexture(3);
+			//std::cout << glrenderT.GetTextureID() << std::endl;
+			
+			plane.glslProgram.SetUniform(1, 0);
+			
 		}
-
-		//Clear color buffer
-		glClearColor(0.0f, 0.0f, 0.0f, 0.f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(0);
 		
 
 		//Update screen

@@ -151,10 +151,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fshader.glsl" />
+    <None Include="fshader.notex.glsl" />
     <None Include="plane_fshader.glsl" />
     <None Include="plane_vshader.glsl" />
     <None Include="teapot.mtl" />
     <None Include="vshader.glsl" />
+    <None Include="vshader.notex.glsl" />
     <None Include="yoda.mtl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

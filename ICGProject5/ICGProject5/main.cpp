@@ -23,7 +23,7 @@ int main(int argc, char* args[])
 	glutInitContextFlags(GLUT_DEBUG);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_RGBA | GLUT_DOUBLE);
 	//glEnable(GL_DEPTH_TEST | GL_CULL_FACE);
-	glDepthFunc(GL_LESS);
+	//glDepthFunc(GL_LESS);
 	glEnable(GL_DEPTH_TEST);
 
 	GLenum res = glewInit();
