@@ -5,9 +5,7 @@ GLfloat scale;
 int main(int argc, char* args[])
 {
 	printf("%s\n",args[1]);
-	//Load teapot
-	//LoadObj(args[1],false);
-	LoadObj(args[1], true);
+
 	//Initialize FreeGLUT
 	glutInit(&argc, args);
 
@@ -22,8 +20,7 @@ int main(int argc, char* args[])
 
 	glutInitContextFlags(GLUT_DEBUG);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_RGBA | GLUT_DOUBLE);
-	//glEnable(GL_DEPTH_TEST | GL_CULL_FACE);
-	//glDepthFunc(GL_LESS);
+
 	glEnable(GL_DEPTH_TEST);
 
 	GLenum res = glewInit();
@@ -42,6 +39,32 @@ int main(int argc, char* args[])
 		return 1;
 	}
 	*/
+	LoadObj(args[1], true);
+	glBufferBind();
+
+	const char *vshader = glbv.USE_TEXTURE ? glbv.VSHADER : glbv.VSHADER_NOTEX;
+	const char *fshader = glbv.USE_TEXTURE ? glbv.FSHADER : glbv.FSHADER_NOTEX;
+
+	//Bind GLSL Prog and Set uniform var
+	if (!glinitGLSLProgram(vshader, fshader)) {
+		//CY_GL_REGISTER_DEBUG_CALLBACK;
+		std::cerr << "load shader failed" << std::endl;
+		system("pause");
+		return 0;
+	}
+
+	//Bind GLSL Prog and Set uniform var
+	if (!glinitRT_GLSLProgram(glbv.P_VSHADER, glbv.P_FSHADER)) {
+		//CY_GL_REGISTER_DEBUG_CALLBACK;
+		std::cerr << "load Plane shader failed" << std::endl;
+		system("pause");
+		return 0;
+	}
+	if (!initGLRenderTexture(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT))
+		std::cerr << "Initialize texture buffer failed" << std::endl;
+
+	//Set Matrix
+	prepareMatrix(glbv.INIT_SCALE);
 
 	/*initialize glew*/
 	std::cout <<"---------Instruction-----------" << std::endl;
@@ -49,6 +72,7 @@ int main(int argc, char* args[])
 	std::cout << "left mouse : adjust angles" << std::endl;
 	std::cout << "right mouse : adjust distance" << std::endl;
 	std::cout << "CTRL : Press CTRL to move light position by mouse" << std::endl;
+	std::cout << "ALT : Press ALT to move plane position by mouse" << std::endl;
 	std::cout << "F6 : recompile shader" << std::endl;
 	std::cout << "------------------------------" << std::endl;
 
@@ -65,32 +89,6 @@ int main(int argc, char* args[])
 	glutSpecialFunc(GLGetSpecialKey);
 
 	glutIdleFunc(GLidle);
-	//Start GLUT main loop
-	//This runs freeGLUT's internal main loop not our main loop.
-
-	//Bind GLSL Prog and Set uniform var
-	if (!glinitGLSLProgram(glbv.VSHADER, glbv.FSHADER)) {
-		//CY_GL_REGISTER_DEBUG_CALLBACK;
-		std::cerr << "load shader failed" << std::endl;
-		system("pause");
-		return 0;
-	}
-
-	//Bind GLSL Prog and Set uniform var
-	if (!glinitRT_GLSLProgram(glbv.P_VSHADER, glbv.P_FSHADER)) {
-		//CY_GL_REGISTER_DEBUG_CALLBACK;
-		std::cerr << "load shader failed" << std::endl;
-		system("pause");
-		return 0;
-	}
-	if (!initGLRenderTexture(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT)) 
-		std::cerr << "Initialize texture buffer failed" << std::endl;
-
-	//Set Matrix
-	prepareMatrix(glbv.INIT_SCALE);
-
-	//Bind vao
-	glBufferBind();
 
 	glutMainLoop();
 

@@ -32,7 +32,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 
 	bool LoadObj(const char *filename, bool loadMtl) {
 		TriObj *tobj = new TriObj;
-		if (!tobj->Load(filename, loadMtl)) {
+		if (!tobj->Load(filename, loadMtl,glbv.USE_TEXTURE)) {
 			printf(" -- ERROR: Cannot load file \"%s.\"", filename);
 			delete tobj;
 			return false;
@@ -125,9 +125,12 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 	
 	bool initGLRenderTexture(int width, int height) {
 		if (glrenderT.Initialize(true, 4, width, height)) {
+			
 			glrenderT.SetTextureMaxAnisotropy();
-			//glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-			glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_NEAREST_MIPMAP_NEAREST);
+			glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
+			//glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR);
+
+			glrenderT.SetTextureWrappingMode(GL_CLAMP,GL_CLAMP);
 			return true;
 		}
 		return false;
@@ -163,11 +166,15 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 
 		cy::Point2f pos;
 		tkball.mpos2window(x,y,(float)glbv.SCREEN_WIDTH, (float)glbv.SCREEN_HEIGHT,pos);
+		int modifier = glutGetModifiers();
 		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 			glbv.MOVE_MODE = glbv.ROTATE;
-			int modifier = glutGetModifiers();
+			
 			if(modifier==GLUT_ACTIVE_CTRL){
 				light.saveBeginRotate(pos);
+			}
+			else if (modifier == GLUT_ACTIVE_ALT) {
+				tkball_plane.saveBeginRotate(pos);
 			}
 			else{
 				
@@ -176,7 +183,12 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		}
 		else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
 			glbv.MOVE_MODE = glbv.ZOOMING;
-			tkball.saveBeginZoom(pos);
+			if (modifier == GLUT_ACTIVE_ALT) {
+				tkball_plane.saveBeginZoom(pos);
+			}
+			else {
+				tkball.saveBeginZoom(pos);
+			}
 		}
 	}
 
@@ -187,13 +199,18 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		switch (glbv.MOVE_MODE)
 		{
 		case glbv.ROTATE:
-			if(modifier==GLUT_ACTIVE_CTRL)
+			if (modifier == GLUT_ACTIVE_CTRL)
 				light.calculateRotate(pos);
+			else if (modifier == GLUT_ACTIVE_ALT)
+				tkball_plane.calculateRotate(pos);
 			else
 				tkball.calculateRotate(pos);
 			break;
 		case glbv.ZOOMING:
-			tkball.calculateZoom(pos);
+			if (modifier == GLUT_ACTIVE_ALT)
+				tkball_plane.calculateZoom(pos);
+			else
+				tkball.calculateZoom(pos);
 			break;
 		default:
 			break;
@@ -246,11 +263,11 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 
 	void GLrender()
 	{
-		//Clear color buffer
-		glClearColor(0.8f, 0.5f, 0.5f, 0.f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glrenderT.Bind();
+		//Clear color buffer
+		glClearColor(0.3f, 0.6f, 0.3f, 0.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//Bind
 		{
 			objList[0].programBind();
@@ -291,6 +308,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 			cy::Point3f newlightpos = tkball.getMatrix().GetSubMatrix3()*light.getMatrix().GetSubMatrix3()*lightpos;
 
 			for (unsigned int i = 0; i < objList[0].NM(); i++) {
+			//for (unsigned int i = 0; i <1; i++) {
 
 				objList[0].glslProgram.SetUniform(0, finalM);
 				objList[0].glslProgram.SetUniform(1, M_inv_trans);
@@ -328,6 +346,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		}
 
 		glrenderT.Unbind();
+		//glDisable(GL_DEPTH_TEST);
 		//Clear color buffer
 		glClearColor(0.0f, 0.0f, 0.0f, 0.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -40,7 +40,7 @@ public:
 
 
 private:
-	cy::Point3f *vArrayPtr, *nArrayPtr, *tArrayPtr;
+	//cy::Point3f *vArrayPtr, *nArrayPtr, *tArrayPtr;
 	float vertice[18] = {
 		-1.0f, -1.0f, 0.0f,
 		1.0f, -1.0f, 0.0f,

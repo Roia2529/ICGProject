@@ -3,12 +3,12 @@
 
 class glb {
 	public:
-	const char*	TITLE = "ICGProject 4";
-	//const char* VSHADER = "vshader.glsl";
-	//const char* FSHADER = "fshader.glsl";
+	const char*	TITLE = "ICGProject 5";
+	const char* VSHADER = "vshader.glsl";
+	const char* FSHADER = "fshader.glsl";
 
-	const char* VSHADER = "vshader.notex.glsl";
-	const char* FSHADER = "fshader.notex.glsl";
+	const char* VSHADER_NOTEX = "vshader.notex.glsl";
+	const char* FSHADER_NOTEX = "fshader.notex.glsl";
 	
 	const char* P_VSHADER = "plane_vshader.glsl";
 	const char* P_FSHADER = "plane_fshader.glsl";
@@ -18,7 +18,7 @@ class glb {
 	const int SCREEN_WIDTH = 640;
 	const int SCREEN_HEIGHT = 480;
 
-	const bool USE_TEXTURE = false;
+	const bool USE_TEXTURE = true;
 
 	//const double INIT_SCALE = 0.0007;
 	const double INIT_SCALE = 0.05;

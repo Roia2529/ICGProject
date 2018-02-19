@@ -11,9 +11,9 @@ class TriObj : public cyTriMesh
 public:
 	cy::GLSLProgram glslProgram;
 
-    bool Load(const char *filename, bool loadMtl)
+    bool Load(const char *filename, bool loadMtl, bool useTexture)
     {
-        //bvh.Clear();
+		this->USE_TEXTURE = useTexture;
         if ( ! LoadFromFileObj( filename, loadMtl ) ) return false;
         if ( ! HasNormals() ) ComputeNormals();
         ComputeBoundingBox();
@@ -230,7 +230,7 @@ private:
 
 	Material *material;
 
-	bool USE_TEXTURE = false;
+	bool USE_TEXTURE;
 };
 
 //-------------------------------------------------------------------------------
