@@ -69,9 +69,6 @@ public:
 			LoadPNG(material[i],6, filename);
 			*/
 		}
-		//assume one material
-		//char* filename = M(0).map_Kd.data;
-		//printf("material path: %s\n", filename);
 		
 	}
 

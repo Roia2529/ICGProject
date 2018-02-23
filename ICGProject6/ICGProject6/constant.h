@@ -1,6 +1,12 @@
 #ifndef _CONSTANT_H
 #define _CONSTANT_H
 
+struct Texture {
+	cy::GLTexture2<GL_TEXTURE_2D> gltexture;
+	unsigned width, height;
+	std::vector<unsigned char> texture_data;
+};
+
 class glb {
 	public:
 	const char*	TITLE = "ICGProject 5";
@@ -12,6 +18,20 @@ class glb {
 	
 	const char* P_VSHADER = "plane_vshader.glsl";
 	const char* P_FSHADER = "plane_fshader.glsl";
+
+	const char* CUBE_VSHADER = "plane_vshader.glsl";
+	const char* CUBE_FSHADER = "plane_fshader.glsl";
+
+
+	std::vector<std::string> faces
+	{
+			"cubemap_posx.png",
+			"cubemap_negx.png",
+			"cubemap_posy.png",
+			"cubemap_negy.png",
+			"cubemap_posz.png",
+			"cubemap_negz.png"
+	};
 
 	const char* MATRIX_NAME = "mat";
 	//Screen Constants

@@ -5,20 +5,15 @@
 
 class Material {
 	
-	struct Texture {
-		cy::GLTexture2<GL_TEXTURE_2D> gltexture;
-		unsigned width, height;
-		std::vector<unsigned char> texture_data;
-	};
 private:
-	char*   name;		//!< Material name
-	char*   map_Ka;	//!< Ambient color texture map
-	char*   map_Kd;	//!< Diffuse color texture map
-	char*   map_Ks;	//!< Specular color texture map
-	char*   map_Ns;	//!< Specular exponent texture map
-	char*   map_d;	//!< Alpha texture map
-	char*   map_bump;	//!< Bump texture map
-	char*   map_disp;	//!< Displacement texture map
+	//char*   name;		//!< Material name
+	//char*   map_Ka;	//!< Ambient color texture map
+	//char*   map_Kd;	//!< Diffuse color texture map
+	//char*   map_Ks;	//!< Specular color texture map
+	//char*   map_Ns;	//!< Specular exponent texture map
+	//char*   map_d;	//!< Alpha texture map
+	//char*   map_bump;	//!< Bump texture map
+	//char*   map_disp;	//!< Displacement texture map
 	
 public:					//! Constructor sets the default material values
 	Material()

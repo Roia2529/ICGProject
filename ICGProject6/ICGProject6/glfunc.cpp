@@ -2,6 +2,7 @@
 #include "glfunc.h"
 #include "Object/objects.h"
 #include "Object/plane.h"
+#include "environment\cubemap.h"
 #include "trackerball.h"
 //***********************//
 extern glb glbv;
@@ -21,6 +22,10 @@ GLuint *vbid;
 PlaneObj plane;
 GLuint vao_p;
 GLuint *vbid_p;
+///---plane-------//
+CubeMap cubemap;
+GLuint vao_cube;
+GLuint *vbid_cube;
 //------------------------------//
 cy::Matrix4f scale_Matrix;
 cy::Matrix4f p_scale_Matrix;
@@ -44,6 +49,11 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		printf("Sucessfully load %s!\n", filename);
 		printf("%d object in object list!\n", objList.size());
 
+		if (!cubemap.Load("cube.obj", false, false, glbv.faces)) {
+			printf(" -- ERROR: Cannot load file \"cube.obj.\"");
+			return false;
+		}
+		printf("Sucessfully load cube.obj!\n");
 		return true;
 	}
 
@@ -83,7 +93,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 
 	void glBufferBind() {
 
-		//Object
+		//-----------------Object----------------//
 		TriObj *tobj = &objList[0];
 		//generate vertex array and bind
 		glGenVertexArrays(1, &vao);
@@ -110,7 +120,8 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 			glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getvArraySize(), tobj->gettArrayPtr(), GL_STATIC_DRAW);
 
 		}
-		//Plane
+
+		//-----------Plane---------//
 		glGenVertexArrays(1, &vao_p);
 		glBindVertexArray(vao_p);
 

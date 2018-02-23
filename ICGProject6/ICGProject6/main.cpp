@@ -60,6 +60,7 @@ int main(int argc, char* args[])
 		system("pause");
 		return 0;
 	}
+
 	if (!initGLRenderTexture(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT))
 		std::cerr << "Initialize texture buffer failed" << std::endl;
 

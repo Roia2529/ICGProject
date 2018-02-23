@@ -135,6 +135,7 @@
     <ClInclude Include="cyHeader\cyMatrix.h" />
     <ClInclude Include="cyHeader\cyPoint.h" />
     <ClInclude Include="cyHeader\cyTriMesh.h" />
+    <ClInclude Include="environment\cubemap.h" />
     <ClInclude Include="glfunc.h" />
     <ClInclude Include="glHeader.h" />
     <ClInclude Include="loadpng\lodepng.h" />
