@@ -7,11 +7,18 @@
 class CubeMap : public cyTriMesh {
 
 private:
-	cy::GLSLProgram glslProgram;
-	Texture textureMap[6];
-	cy::Point3f *vArrayPtr, *nArrayPtr, *tArrayPtr;
-	//Material *material;
+	GLuint vao;
+	GLuint *vbid;
+	unsigned int textureID;
+
 	std::vector<std::string> figure_names;
+	CubeFace textureMap[6];
+	cy::GLTextureCubeMap tcubemap;
+	cy::Point3f *vArrayPtr, *nArrayPtr, *tArrayPtr;
+	cy::Point3f center;
+
+	cy::Matrix4f scale;
+	cy::Matrix4f projection;
 	bool USE_TEXTURE;
 
 public:					//! Constructor sets the default material values
@@ -19,7 +26,20 @@ public:					//! Constructor sets the default material values
 	{
 		this->USE_TEXTURE = false;
 	}
+	cy::GLSLProgram glslProgram;
 
+	void setScale(GLfloat scaleinit) {
+		scale.SetScale(scaleinit);
+
+		//center
+		center = (GetBoundMin() + GetBoundMax())*scaleinit*(0.5);
+		
+		scale.AddTrans(-center);
+	}
+
+	cy::Matrix4f getScale() {
+		return scale;
+	}
 	bool Load(const char *filename, bool loadMtl, bool useTexture, std::vector<std::string> figurenames)
 	{
 		this->USE_TEXTURE = useTexture;
@@ -28,21 +48,57 @@ public:					//! Constructor sets the default material values
 		if (!LoadFromFileObj(filename, loadMtl)) return false;
 		if (!HasNormals()) ComputeNormals();
 		ComputeBoundingBox();
-
+		setScale(0.1);
 		computeArrayData();
 		LoadTexture();
 		return true;
 	}
 
-	void LoadTexture() {
-
+	bool LoadTexture() {
+		std::cout << "-------------------------------" << std::endl;
+		std::cout << "Start Loading Sky box figures" << std::endl;
 		for (unsigned int i = 0; i < 6; i++) {
 			const char* filename = this->figure_names[i].c_str();
 			if (!LoadPNG(i, filename)) {
-				std::cout << ":Load cube figure failed." << std::endl;
-				break;
+				std::cout << "Load cube figure failed." << std::endl;
+				return false;
 			}
 		}
+		return true;
+	}
+
+	//void initTexture() {
+	//	glEnable(GL_TEXTURE_CUBE_MAP);
+	//	glGenTextures(1, &textureID);
+	//	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+	//	for (unsigned int i = 0; i < 6; i++) {
+
+	//		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, textureMap[i].width, textureMap[i].height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureMap[i].texture_data.data());
+	//		//tcubemap.SetImage((cy::GLTextureCubeMap::Side)i, GL_RGBA4, GL_RGBA, textureMap[i].texture_data.data(), textureMap[i].width, textureMap[i].height, 0);
+	//		//CY_GL_REGISTER_DEBUG_CALLBACK;
+	//	}
+	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	//	CY_GL_REGISTER_DEBUG_CALLBACK;
+	//	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	//}
+
+	void initTexture() {
+		tcubemap.Initialize();
+		for (unsigned int i = 0; i < 6; i++) {
+			//tcubemap.SetImageRGBA((cy::GLTextureCubeMap::Side)i, textureMap[i].texture_data.data(), textureMap[i].width, textureMap[i].height, 0);
+			tcubemap.SetImage((cy::GLTextureCubeMap::Side)i, GL_RGBA4, GL_RGBA, (GLubyte*)textureMap[i].texture_data.data(), textureMap[i].width, textureMap[i].height,0);
+			CY_GL_REGISTER_DEBUG_CALLBACK;
+		}
+		tcubemap.BuildMipmaps();
+		tcubemap.SetSeamless(true);
+		tcubemap.SetMaxAnisotropy();
+		
+		tcubemap.SetFilteringMode(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
+		//CY_GL_REGISTER_DEBUG_CALLBACK;
 	}
 
 	bool LoadPNG(int index, const char* filename) {
@@ -60,8 +116,75 @@ public:					//! Constructor sets the default material values
 		return true;
 	}
 
-	void textureBind(int mid, int mapid, int bid) {
+	void initBufferBind() {
+		initTexture();
 
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+
+		vbid = new GLuint[1];
+		glGenBuffers(1, vbid);
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*getvArraySize(), vArrayPtr, GL_STATIC_DRAW);
+
+	}
+
+	bool initGLSLProgram(const char *vShaderFile, const char *fShaderFile) {
+		if (!glslProgram.BuildFiles(vShaderFile, fShaderFile)) return false;
+		glslProgram.Bind();
+		glslProgram.RegisterUniform(0, "mat");
+		glslProgram.RegisterUniform(1, "skybox");
+
+		return true;
+	}
+
+	void programBind() {
+		glslProgram.Bind();
+	}
+
+	void updateUniform(cy::Matrix4f project, cy::Matrix4f view) {
+		cy::Matrix4f mat = project * view * scale;
+		glslProgram.SetUniform(0, mat);
+		tcubemap.Bind(0);
+		glslProgram.SetUniform(1, 0);
+	}
+
+	void textureBind(int textureid) {
+		//glActiveTexture(textureid + GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+		//tcubemap.Bind(textureid);
+		tcubemap.Bind(textureid);
+	}
+
+	void BufferBind() {
+		glBindVertexArray(vao);
+
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	}
+
+	void DrawArray() {
+		glDrawArrays(GL_TRIANGLES, 0, 3 * NF());
+		glDisableVertexAttribArray(0);
+	}
+
+	void computeArrayData() {
+		//printf("NF: %d", NF());
+		vArrayPtr = new cy::Point3f[NF() * 3];
+		if(HasNormals())nArrayPtr = new cy::Point3f[NF() * 3];
+		unsigned int index = 0;
+		for (unsigned int i = 0; i<NF(); i++) {
+
+			for (unsigned int j = 0; j<3; j++) {
+				vArrayPtr[index] = V(F(i).v[j]);
+				if (HasNormals()) nArrayPtr[index] = VN(FN(i).v[j]);
+				
+				//std::cout << "x: " << vArrayPtr[index].x << " y:" << vArrayPtr[index].y << " z:" << vArrayPtr[index].z << std::endl;
+				index++;
+			}
+		}
 	}
 
 	cy::Point3f getMtlKa(int mid) {
@@ -74,56 +197,6 @@ public:					//! Constructor sets the default material values
 
 	cy::Point3f getMtlKs(int mid) {
 		return cy::Point3f(M(mid).Ks[0], M(mid).Ks[1], M(mid).Ks[2]);
-	}
-
-	bool initGLSLProgram(const char *vShaderFile, const char *fShaderFile) {
-		if (!glslProgram.BuildFiles(vShaderFile, fShaderFile)) return false;
-		glslProgram.Bind();
-		glslProgram.RegisterUniform(0, "mat");
-
-		//for shading
-		glslProgram.RegisterUniform(1, "matInvTrans");
-		glslProgram.RegisterUniform(2, "matOrigin");
-		glslProgram.RegisterUniform(3, "lightP");
-
-		glslProgram.RegisterUniform(4, "Mtl_ka");
-		glslProgram.RegisterUniform(5, "Mtl_kd");
-		glslProgram.RegisterUniform(6, "Mtl_ks");
-
-		glslProgram.RegisterUniform(7, "colormode");
-
-
-		if (USE_TEXTURE)
-		{
-			glslProgram.RegisterUniform(8, "Tmap_ka");
-			glslProgram.RegisterUniform(9, "Tmap_kd");
-			glslProgram.RegisterUniform(10, "Tmap_ks");
-
-			glslProgram.RegisterUniform(11, "Use_Tmap_ka");
-			glslProgram.RegisterUniform(12, "Use_Tmap_kd");
-			glslProgram.RegisterUniform(13, "Use_Tmap_ks");
-		}
-
-
-		CY_GL_REGISTER_DEBUG_CALLBACK;
-		return true;
-	}
-
-	void programBind() {
-		glslProgram.Bind();
-	}
-
-	void computeArrayData() {
-		vArrayPtr = new cy::Point3f[NF() * 3];
-		nArrayPtr = new cy::Point3f[NF() * 3];
-		unsigned int index = 0;
-		for (unsigned int i = 0; i<NF(); i++) {
-
-			for (unsigned int j = 0; j<3; j++) {
-				vArrayPtr[index] = V(F(i).v[j]);
-				nArrayPtr[index] = VN(FN(i).v[j]);
-			}
-		}
 	}
 
 	int getNumVertices() {

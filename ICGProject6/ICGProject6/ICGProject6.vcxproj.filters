@@ -97,5 +97,11 @@
     <None Include="vshader.notex.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="cube_fshader.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="cube_vshader.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

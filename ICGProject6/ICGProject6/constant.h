@@ -7,9 +7,15 @@ struct Texture {
 	std::vector<unsigned char> texture_data;
 };
 
+
+struct CubeFace {
+	unsigned width, height;
+	std::vector<unsigned char> texture_data;
+};
+
 class glb {
 	public:
-	const char*	TITLE = "ICGProject 5";
+	const char*	TITLE = "ICGProject 6";
 	const char* VSHADER = "vshader.glsl";
 	const char* FSHADER = "fshader.glsl";
 
@@ -19,8 +25,8 @@ class glb {
 	const char* P_VSHADER = "plane_vshader.glsl";
 	const char* P_FSHADER = "plane_fshader.glsl";
 
-	const char* CUBE_VSHADER = "plane_vshader.glsl";
-	const char* CUBE_FSHADER = "plane_fshader.glsl";
+	const char* CUBE_VSHADER = "cube_vshader.glsl";
+	const char* CUBE_FSHADER = "cube_fshader.glsl";
 
 
 	std::vector<std::string> faces
@@ -38,7 +44,7 @@ class glb {
 	const int SCREEN_WIDTH = 640;
 	const int SCREEN_HEIGHT = 480;
 
-	const bool USE_TEXTURE = true;
+	const bool USE_TEXTURE = false;
 
 	//const double INIT_SCALE = 0.0007;
 	const double INIT_SCALE = 0.05;

@@ -26,6 +26,8 @@ public:
 	void calculateRotate(cy::Point2f p);
 	void saveBeginZoom(cy::Point2f p);
 	void calculateZoom(cy::Point2f p);
+	void setRadius(float r);
+	float getZoomRatio();
 private:
 	float angle = 0.0, axis[3], trans[3];
 
@@ -41,6 +43,7 @@ private:
 	cy::Point3f twodim2threedim(cy::Point2f p);
 
 	bool USE_TRACK;
+	float radius = 1.0f;
 	float Default_distance = 2.0f;
 	float cur_dis = 0;
 	float pre_dis = 0;
@@ -48,5 +51,5 @@ private:
 
 };
 
-extern trackball tkball;
-extern trackball light;
+//extern trackball tkball;
+//extern trackball light;

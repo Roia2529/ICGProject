@@ -7,6 +7,12 @@
 
 class TriObj : public cyTriMesh
 {
+private:
+	cy::Point3f *vArrayPtr, *nArrayPtr, *tArrayPtr;
+
+	Material *material;
+
+	bool USE_TEXTURE;
 
 public:
 	cy::GLSLProgram glslProgram;
@@ -215,19 +221,6 @@ protected:
 	//cy::GLSLProgram vshader;
 	//cy::GLSLProgram fshader;
 	
-private:
-    //cyBVHTriMesh bvh;
-	//std::vector<cy::Point3f> vArrayPtr, nArrayPtr;
-    cy::Point3f *vArrayPtr, *nArrayPtr,*tArrayPtr;
-
-	//texture data
-	//cy::GLTexture2<GL_TEXTURE_2D> diffuse_Texture;
-	//unsigned texture_width, texture_height;
-	//std::vector<unsigned char> texture_data;
-
-	Material *material;
-
-	bool USE_TEXTURE;
 };
 
 //-------------------------------------------------------------------------------

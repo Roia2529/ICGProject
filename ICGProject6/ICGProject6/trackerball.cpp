@@ -2,8 +2,8 @@
 
 cy::Matrix4f trackball::getMatrix() {
 	
-	return cy::Matrix4f::MatrixTrans(cy::Point3f(0, 0, cur_dis - Default_distance)) * cur_matrix;
-	//return cur_matrix;
+	//return cy::Matrix4f::MatrixTrans(cy::Point3f(0, 0, cur_dis - Default_distance)) * cur_matrix;
+	return cur_matrix;
 }
 
 void trackball::saveBeginRotate(cy::Point2f p) {
@@ -50,6 +50,15 @@ void trackball::calculateZoom(cy::Point2f p) {
 
 cy::Point3f trackball::twodim2threedim(cy::Point2f p) {
 	float r = p[0] * p[0] + p[1] * p[1];
-	float z = r > 1.0f / 2 ? 1.0f / 2 / sqrt(r) : sqrt(1.0f - r);
+	float R_square = radius * radius;
+	float z = r > R_square / 2 ? R_square / 2 / sqrt(r) : sqrt(R_square - r);
 	return cy::Point3f(p[0], p[1], z);
+}
+
+void trackball::setRadius(const float r) {
+	radius = r;
+}
+
+float trackball::getZoomRatio() {
+	return cur_dis;
 }

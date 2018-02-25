@@ -13,8 +13,8 @@ bool glinitRT_GLSLProgram(const char *vShaderFile, const char *fShaderFile);
 
 void prepareMatrix(GLfloat scaleinit);
 void glBufferBind();
-
-bool initGL();
+void updateView();
+cy::Matrix4f LookAt(cy::Point3f campos, cy::Point3f focus, cy::Point3f up);
 
 bool initGLRenderTexture(int width, int height);
 

@@ -151,6 +151,8 @@
     <ClCompile Include="trackerball.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cube_fshader.glsl" />
+    <None Include="cube_vshader.glsl" />
     <None Include="fshader.glsl" />
     <None Include="fshader.notex.glsl" />
     <None Include="plane_fshader.glsl" />
