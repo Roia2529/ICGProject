@@ -8,9 +8,8 @@
 #include <time.h>
 
 bool LoadObj(const char *filename, bool loadMtl);
-bool glinitGLSLProgram(const char *vShaderFile, const char *fShaderFile);
-bool glinitRT_GLSLProgram(const char *vShaderFile, const char *fShaderFile);
 
+bool initShaders();
 void prepareMatrix(GLfloat scaleinit);
 void glBufferBind();
 void updateView();

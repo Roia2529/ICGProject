@@ -38,18 +38,24 @@ int main(int argc, char* args[])
 	LoadObj(args[1], true);
 	glBufferBind();
 
-	const char *vshader = glbv.USE_TEXTURE ? glbv.VSHADER : glbv.VSHADER_NOTEX;
-	const char *fshader = glbv.USE_TEXTURE ? glbv.FSHADER : glbv.FSHADER_NOTEX;
+	std::cerr << "*-----Shaders initialization-----*" << std::endl;
+	if (!initShaders()) {
+		std::cerr << "Loading shaders failed" << std::endl;
+		system("pause");
+		return 0;
+	}
+	//const char *vshader = glbv.USE_TEXTURE ? glbv.VSHADER : glbv.VSHADER_NOTEX;
+	//const char *fshader = glbv.USE_TEXTURE ? glbv.FSHADER : glbv.FSHADER_NOTEX;
 
-	//Bind GLSL Prog and Set uniform var
+	////Bind GLSL Prog and Set uniform var
 	//if (!glinitGLSLProgram(vshader, fshader)) {
 	//	//CY_GL_REGISTER_DEBUG_CALLBACK;
-	//	std::cerr << "load shader failed" << std::endl;
+	//	std::cerr << "load object shader failed" << std::endl;
 	//	system("pause");
 	//	return 0;
 	//}
 
-	//Bind GLSL Prog and Set uniform var
+	////Bind GLSL Prog and Set uniform var
 	//if (!glinitRT_GLSLProgram(glbv.P_VSHADER, glbv.P_FSHADER)) {
 	//	//CY_GL_REGISTER_DEBUG_CALLBACK;
 	//	std::cerr << "load Plane shader failed" << std::endl;
@@ -57,19 +63,22 @@ int main(int argc, char* args[])
 	//	return 0;
 	//}
 
-	//if (!initGLRenderTexture(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT))
-	//	std::cerr << "Initialize texture buffer failed" << std::endl;
+	if (!initGLRenderTexture(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT))
+		std::cerr << "Initialize texture buffer failed" << std::endl;
 
 	//Set Matrix
-	prepareMatrix(glbv.INIT_SCALE);
+	//teapot
+	//prepareMatrix(glbv.INIT_SCALE);
+	//sphere
+	prepareMatrix(0.2);
 
 	/*initialize glew*/
 	std::cout <<"---------Instruction-----------" << std::endl;
 	std::cout << "ESC : exit" << std::endl;
-	std::cout << "left mouse : adjust angles" << std::endl;
-	std::cout << "right mouse : adjust distance" << std::endl;
-	std::cout << "CTRL : Press CTRL to move light position by mouse" << std::endl;
-	std::cout << "ALT : Press ALT to move plane position by mouse" << std::endl;
+	std::cout << "left mouse : adjust camera angles" << std::endl;
+	std::cout << "right mouse : adjust camera distance" << std::endl;
+	std::cout << "CTRL : Press CTRL to rotate teapot by mouse" << std::endl;
+	std::cout << "ALT : Press ALT to rotate light position by mouse" << std::endl;
 	std::cout << "F6 : recompile shader" << std::endl;
 	std::cout << "------------------------------" << std::endl;
 

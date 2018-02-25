@@ -15,7 +15,7 @@ trackball tkball_camera;
 static int start;
 
 cy::Point4f lightpos(0.0f, 10.0f, 0.0f, 0.0f);
-cy::Point3f camera(2.0f, 5.0f, 0.0f);
+cy::Point3f camera(5.0f, 0.0f, 0.0f);
 cy::Point3f cameraFocus(0.0f, 0.0f, 0.0f);
 cy::Point3f cameraUpVec(0.0f, 1.0f, 0.0f);
 cy::Point3f cameraCurrentPos;
@@ -32,8 +32,10 @@ CubeMap cubemap;
 GLuint vao_cube;
 GLuint *vbid_cube;
 //------------------------------//
-cy::Matrix4f object_scale;
+//cy::Matrix4f object_scale;
 cy::Matrix4f object_model = cy::Matrix4f::MatrixRotationX(-cy::cyPi<float>() / 2);
+
+//cy::Matrix4f object_model;
 cy::Matrix4f p_scale_Matrix;
 cy::Matrix4f pro;
 cy::Matrix4f view;
@@ -41,8 +43,32 @@ cy::Matrix4f view;
 cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 //------------------------------//
 
+	bool initShaders() {
+		const char *vshader = glbv.USE_TEXTURE ? glbv.VSHADER : glbv.VSHADER_NOTEX;
+		const char *fshader = glbv.USE_TEXTURE ? glbv.FSHADER : glbv.FSHADER_NOTEX;
+
+		//object shader
+		if (!objList[0].initGLSLProgram(vshader, fshader)) {
+			std::cout << "Loading Object Shaders failed." << std::endl;
+			return false;
+		}
+
+		//plane shader
+		if (!plane.initGLSLProgram(glbv.P_VSHADER, glbv.P_FSHADER)) {
+			std::cerr << "load Plane shader failed" << std::endl;
+			return false;
+		}
+
+		if (!cubemap.initGLSLProgram(glbv.CUBE_VSHADER, glbv.CUBE_FSHADER)) {
+			std::cerr << "load cube shader failed" << std::endl;
+			return false;
+		}
+		return true;
+	}
+
 	bool LoadObj(const char *filename, bool loadMtl) {
-		TriObj *tobj = new TriObj;
+		TriObj *tobj = new TriObj(glbv.COLOR_MODE);
+		printf("********Loading object....*******\n");
 		if (!tobj->Load(filename, loadMtl,glbv.USE_TEXTURE)) {
 			printf(" -- ERROR: Cannot load file \"%s.\"", filename);
 			delete tobj;
@@ -55,29 +81,13 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		printf("Sucessfully load %s!\n", filename);
 		printf("%d object in object list!\n", objList.size());
 
+		printf("********Loading cube....*******\n");
 		if (!cubemap.Load("cube.obj", false, false, glbv.faces)) {
 			printf(" -- ERROR: Cannot load file \"cube.obj.\"");
 			return false;
 		}
 		printf("Sucessfully load cube.obj!\n");
 		return true;
-	}
-
-	bool glinitRT_GLSLProgram(const char *vShaderFile, const char *fShaderFile) {
-
-		if (plane.initGLSLProgram(vShaderFile, fShaderFile)) {
-			std::cout << "Loading Plane Shaders done." << std::endl;
-			return true;
-		}
-		return false;
-	}
-
-	bool glinitGLSLProgram(const char *vShaderFile, const char *fShaderFile) {
-		if (objList[0].initGLSLProgram(vShaderFile, fShaderFile)) {
-			std::cout << "Loading Shaders done." << std::endl;
-			return true;
-		}
-		return false;
 	}
 
 	void getProjection() {
@@ -87,11 +97,14 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 
 	void prepareMatrix(GLfloat scaleinit) {
 		scale = scaleinit;
-		object_scale.SetScale(scale);
+		//object_scale.SetScale(scale);
 
-		//put teapot in the center
-		object_scale.AddTrans((objList[0].GetBoundMin() + objList[0].GetBoundMax())*scale*(-0.5));
+		////put teapot in the center
+		//object_scale.AddTrans((objList[0].GetBoundMin() + objList[0].GetBoundMax())*scale*(-0.5));
+		objList[0].setScale(scale);
 		getProjection();
+
+		object_model.SetIdentity();
 
 		p_scale_Matrix.SetScale(0.8);
 		updateView();
@@ -106,33 +119,8 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 	}
 		void glBufferBind() {
 
-		//-----------------Object----------------//
-		TriObj *tobj = &objList[0];
-		//generate vertex array and bind
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-
-		//3 buffer
-		vbid = new GLuint[3];
-		glGenBuffers(3, vbid);
-
-		//vertices
-		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getvArraySize(), tobj->getvArrayPtr(), GL_STATIC_DRAW);
-
-		//normals
-		glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getvArraySize(), tobj->getnArrayPtr(), GL_STATIC_DRAW);
-
-		//texture
-		if (glbv.USE_TEXTURE)
-		{
-			tobj->initTexture();
-			glBindBuffer(GL_ARRAY_BUFFER, vbid[2]);
-
-			glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*tobj->getvArraySize(), tobj->gettArrayPtr(), GL_STATIC_DRAW);
-
-		}
+		//---------Object---------//
+		objList[0].initBufferBind();
 
 		//-----------Plane---------//
 		//glGenVertexArrays(1, &vao_p);
@@ -147,19 +135,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 
 		//skybox//
 		cubemap.initBufferBind();
-		//glGenVertexArrays(1, &vao_cube);
-		//glBindVertexArray(vao_cube);
-
-		//vbid_cube = new GLuint[1];
-		//glGenBuffers(1, vbid_cube);
-
-		//glBindBuffer(GL_ARRAY_BUFFER, vbid_cube[0]);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*cubemap.getvArraySize(), cubemap.getvArrayPtr(), GL_STATIC_DRAW);
-
-		if (!cubemap.initGLSLProgram(glbv.CUBE_VSHADER, glbv.CUBE_FSHADER)) {
-			std::cerr << "load cube shader failed" << std::endl;
-		}
-	}
+}
 	
 	bool initGLRenderTexture(int width, int height) {
 		if (glrenderT.Initialize(true, 4, width, height)) {
@@ -230,7 +206,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		case (GLUT_KEY_F6):
 			std::cout << "Recompiling Shaders" << std::endl;
 			//recompile
-			glinitGLSLProgram(glbv.VSHADER, glbv.FSHADER);
+			initShaders();
 			std::cout << "Compilation Done" << std::endl;
 			break;
 		default:
@@ -269,92 +245,28 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		//Bind
-		//{
-		//	objList[0].programBind();
-		//	
-		//	glBindVertexArray(vao);
 
-		//	glEnableVertexAttribArray(0);
-		//	glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
-		//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		//	
-		//	//Bind buffer before glVertexAttribPointer
-		//	glEnableVertexAttribArray(1);
-		//	glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
-		//	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		objList[0].programBind();
+		objList[0].BufferBind();
 
+		//transformation
+		
+		cy::Matrix4f M_wo_pro;
+		M_wo_pro = tkball.getMatrix() * object_model * objList[0].getScale();
 
-		//	if (glbv.USE_TEXTURE)
-		//	{
-		//		glEnableVertexAttribArray(2);
-		//		glBindBuffer(GL_ARRAY_BUFFER, vbid[2]);
-		//		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		//	}
-		//	
-		//}
-
-		//
-		////transformation
-		//
-		//	cy::Matrix4f M_wo_pro;
-		//	cy::Matrix3f M_inv_trans;
-		//	cy::Matrix4f finalM;
-		//	M_wo_pro = view * tkball.getMatrix() * object_model * object_scale;
-		//	M_inv_trans = M_wo_pro.GetSubMatrix3().GetTranspose().GetInverse();
-
-		//	finalM = pro * M_wo_pro;
-		//{
-		//	
-		//	cy::Point3f newlightpos = cy::Point3f(view *light.getMatrix()*lightpos);
-
-		//	for (unsigned int i = 0; i < objList[0].NM(); i++) {
-		//	//for (unsigned int i = 0; i <1; i++) {
-
-		//		objList[0].glslProgram.SetUniform(0, finalM);
-		//		objList[0].glslProgram.SetUniform(1, M_inv_trans);
-		//		objList[0].glslProgram.SetUniform(2, M_wo_pro.GetSubMatrix3());
-		//		objList[0].glslProgram.SetUniform(3, newlightpos);
-
-		//		objList[0].glslProgram.SetUniform(4, objList[0].getMtlKa(i));
-		//		objList[0].glslProgram.SetUniform(5, objList[0].getMtlKd(i));
-		//		objList[0].glslProgram.SetUniform(6, objList[0].getMtlKs(i));
-
-		//		objList[0].glslProgram.SetUniform(7, glbv.COLOR_MODE);
+		cy::Point3f newlightpos = cy::Point3f(view *light.getMatrix()*lightpos);
+		cubemap.textureBind(3);
+		objList[0].updateUniform(M_wo_pro, pro, view, newlightpos, cameraCurrentPos);
+		objList[0].DrawArray();
 
 
-		//		if (glbv.USE_TEXTURE)
-		//		{
-		//			objList[0].glslProgram.SetUniform(8, 0);
-		//			objList[0].textureBind(i, 0, 0);
-		//			objList[0].glslProgram.SetUniform(9, 1);
-		//			objList[0].textureBind(i, 1, 1);
-		//			objList[0].glslProgram.SetUniform(10, 2);
-		//			objList[0].textureBind(i, 2, 2);
-
-		//			objList[0].glslProgram.SetUniform(11, objList[0].hasTextureKa(i));
-		//			objList[0].glslProgram.SetUniform(12, objList[0].hasTextureKd(i));
-		//			objList[0].glslProgram.SetUniform(13, objList[0].hasTextureKs(i));
-		//		}
-		//		
-		//		glDrawArrays(GL_TRIANGLES, objList[0].GetMaterialFirstFace(i) * 3, objList[0].GetMaterialFaceCount(i) * 3);
-
-		//		glDisableVertexAttribArray(0);
-		//		glDisableVertexAttribArray(1);
-		//		if(glbv.USE_TEXTURE)
-		//			glDisableVertexAttribArray(2);
-		//	}
-		//}
-		//glBindVertexArray(0);
-
+		//skybox
 		glDepthMask(GL_FALSE); 
-		//glDepthFunc(GL_LEQUAL);
 		cubemap.programBind();
 		cubemap.BufferBind();
 
 		cubemap.updateUniform(pro, view);
 		cubemap.DrawArray();
-		//glDepthFunc(GL_LESS);
 		glDepthMask(GL_TRUE);
 
 

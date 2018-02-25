@@ -57,6 +57,9 @@
     <ClInclude Include="environment\cubemap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Object\BaseObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

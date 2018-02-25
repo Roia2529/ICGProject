@@ -9,7 +9,7 @@ class CubeMap : public cyTriMesh {
 private:
 	GLuint vao;
 	GLuint *vbid;
-	unsigned int textureID;
+	//unsigned int textureID;
 
 	std::vector<std::string> figure_names;
 	CubeFace textureMap[6];
@@ -20,13 +20,14 @@ private:
 	cy::Matrix4f scale;
 	cy::Matrix4f projection;
 	bool USE_TEXTURE;
+	cy::GLSLProgram glslProgram;
 
 public:					//! Constructor sets the default material values
 	CubeMap()
 	{
 		this->USE_TEXTURE = false;
 	}
-	cy::GLSLProgram glslProgram;
+	
 
 	void setScale(GLfloat scaleinit) {
 		scale.SetScale(scaleinit);
@@ -48,14 +49,13 @@ public:					//! Constructor sets the default material values
 		if (!LoadFromFileObj(filename, loadMtl)) return false;
 		if (!HasNormals()) ComputeNormals();
 		ComputeBoundingBox();
-		setScale(0.1);
+		setScale(1);
 		computeArrayData();
 		LoadTexture();
 		return true;
 	}
 
 	bool LoadTexture() {
-		std::cout << "-------------------------------" << std::endl;
 		std::cout << "Start Loading Sky box figures" << std::endl;
 		for (unsigned int i = 0; i < 6; i++) {
 			const char* filename = this->figure_names[i].c_str();
@@ -64,27 +64,9 @@ public:					//! Constructor sets the default material values
 				return false;
 			}
 		}
+		printf("-----Success to load PNG-----\n");
 		return true;
 	}
-
-	//void initTexture() {
-	//	glEnable(GL_TEXTURE_CUBE_MAP);
-	//	glGenTextures(1, &textureID);
-	//	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-	//	for (unsigned int i = 0; i < 6; i++) {
-
-	//		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, textureMap[i].width, textureMap[i].height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureMap[i].texture_data.data());
-	//		//tcubemap.SetImage((cy::GLTextureCubeMap::Side)i, GL_RGBA4, GL_RGBA, textureMap[i].texture_data.data(), textureMap[i].width, textureMap[i].height, 0);
-	//		//CY_GL_REGISTER_DEBUG_CALLBACK;
-	//	}
-	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	//	CY_GL_REGISTER_DEBUG_CALLBACK;
-	//	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-	//}
 
 	void initTexture() {
 		tcubemap.Initialize();

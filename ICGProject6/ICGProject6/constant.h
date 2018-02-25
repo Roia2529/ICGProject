@@ -49,7 +49,7 @@ class glb {
 	//const double INIT_SCALE = 0.0007;
 	const double INIT_SCALE = 0.05;
 
-	const int COLOR_MODE = 3;
+	const int COLOR_MODE = 2;
 	enum { ROTATE, ZOOMING }	MOVE_MODE;
 
 };

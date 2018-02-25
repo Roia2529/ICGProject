@@ -139,6 +139,7 @@
     <ClInclude Include="glfunc.h" />
     <ClInclude Include="glHeader.h" />
     <ClInclude Include="loadpng\lodepng.h" />
+    <ClInclude Include="Object\BaseObject.h" />
     <ClInclude Include="Object\Material.h" />
     <ClInclude Include="Object\objects.h" />
     <ClInclude Include="Object\plane.h" />

@@ -1,25 +1,29 @@
 #pragma once
 #ifndef _OBJECTS_H_INCLUDED_
 #define _OBJECTS_H_INCLUDED_
-#include "../glHeader.h"
-#include "../loadpng/lodepng.h"
-#include "Material.h"
+//#include "../glHeader.h"
+//#include "../loadpng/lodepng.h"
+//#include "Material.h"
+#include "BaseObject.h"
 
-class TriObj : public cyTriMesh
+class TriObj : public BaseObject
 {
 private:
-	cy::Point3f *vArrayPtr, *nArrayPtr, *tArrayPtr;
-
-	Material *material;
-
-	bool USE_TEXTURE;
+	int COLOR_MODE;
+	cy::Matrix4f mvp, mvp_wo_proj;
+	cy::Matrix4f proj;
+	cy::Matrix3f mvp_inv_trans;
+	cy::Point3f lightpos;
+	cy::Point3f camerapos;
 
 public:
-	cy::GLSLProgram glslProgram;
+	TriObj(int mode) : BaseObject() {
+		COLOR_MODE = mode;
+	}
 
     bool Load(const char *filename, bool loadMtl, bool useTexture)
     {
-		this->USE_TEXTURE = useTexture;
+		USE_TEXTURE = useTexture;
         if ( ! LoadFromFileObj( filename, loadMtl ) ) return false;
         if ( ! HasNormals() ) ComputeNormals();
         ComputeBoundingBox();
@@ -28,8 +32,8 @@ public:
 		printf("%d vertices found in object\n", NV());
 		printf("%d materials found in object\n", NM());
 
-		printf("/////////////////////////////\n");
-		printf("materials info:\n");
+		if (NM())
+			printf("*-----materials info:-----*\n");
 		for (int i = 0; i < NM(); i++) {
 			printf("Material %d:\n", i);
 			if(M(i).map_Ka)
@@ -74,7 +78,9 @@ public:
 			filename = M(i).map_disp.data;
 			LoadPNG(material[i],6, filename);
 			*/
+			printf("-----Success to load PNG-----\n");
 		}
+
 		
 	}
 
@@ -111,31 +117,53 @@ public:
 
 	void textureBind(int mid,int mapid,int bid) {
 		material[mid].textureMap[mapid].gltexture.Bind(bid);
-		/*for (unsigned int i = 0; i < NM(); i++) {
-			diffuse_Texture.Bind();
-		}*/
-	}
-	bool hasTextureKa(int mid) {
-		return material[mid].hasKaTexture;
-	}
-	
-	bool hasTextureKd(int mid) {
-		return material[mid].hasKdTexture;
-	}
-	bool hasTextureKs(int mid) {
-		return material[mid].hasKsTexture;
 	}
 
-	cy::Point3f getMtlKa(int mid) {
-		return cy::Point3f(M(mid).Ka[0], M(mid).Ka[1], M(mid).Ka[2]);
+	void initBufferBind() {
+		initTexture();
+
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+
+		vbid = new GLuint[3];
+		glGenBuffers(3, vbid);
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*getvArraySize(), vArrayPtr, GL_STATIC_DRAW);
+
+		//normals
+		glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*getvArraySize(), getnArrayPtr(), GL_STATIC_DRAW);
+
+		//texture
+		if (USE_TEXTURE)
+		{
+			initTexture();
+			glBindBuffer(GL_ARRAY_BUFFER, vbid[2]);
+
+			glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*getvArraySize(), gettArrayPtr(), GL_STATIC_DRAW);
+
+		}
 	}
-	
-	cy::Point3f getMtlKd(int mid) {
-		return cy::Point3f(M(mid).Kd[0], M(mid).Kd[1], M(mid).Kd[2]);
-	}
-	
-	cy::Point3f getMtlKs(int mid) {
-		return cy::Point3f(M(mid).Ks[0], M(mid).Ks[1], M(mid).Ks[2]);
+	void BufferBind() {
+		glBindVertexArray(vao);
+
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+		//Bind buffer before glVertexAttribPointer
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+		if (USE_TEXTURE)
+		{
+			glEnableVertexAttribArray(2);
+			glBindBuffer(GL_ARRAY_BUFFER, vbid[2]);
+			glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		}
 	}
 	
 	bool initGLSLProgram(const char *vShaderFile, const char *fShaderFile) {
@@ -165,61 +193,73 @@ public:
 				glslProgram.RegisterUniform(12, "Use_Tmap_kd");
 				glslProgram.RegisterUniform(13, "Use_Tmap_ks");
 			}
+		glslProgram.RegisterUniform(14, "cameraPos");
+		glslProgram.RegisterUniform(15, "skybox");
 
 		
 		CY_GL_REGISTER_DEBUG_CALLBACK;
 		return true;
 	}
 
-	void programBind() {
-		glslProgram.Bind();
+	void updateUniform(cy::Matrix4f new_mvp_wo_pro, cy::Matrix4f new_proj, cy::Matrix4f view, cy::Point3f newlightpos, cy::Point3f newcamerapos) {
+		
+		mvp_wo_proj = new_mvp_wo_pro;
+		proj = new_proj;
+		lightpos = newlightpos;
+
+		mvp = proj * view * mvp_wo_proj;
+		mvp_inv_trans = mvp_wo_proj.GetSubMatrix3().GetTranspose().GetInverse();
+
+		camerapos = newcamerapos;
 	}
 
-    void computeArrayData(){
-        vArrayPtr = new cy::Point3f[NF() * 3];
-		nArrayPtr = new cy::Point3f[NF() * 3];
-		tArrayPtr = new cy::Point3f[NF() * 3];
-        unsigned int index = 0;
-        for(unsigned int i=0; i<NF();i++){
+	virtual void DrawArray() {
 
-            for(unsigned int j=0;j<3;j++){
-               vArrayPtr[index] = V( F(i).v[j] );
-			   //printf("point FN(i).v[j]: %d\n", FN(i).v[j]);
-                nArrayPtr[index] = VN( FN(i).v[j] );
-				tArrayPtr[index++] = VT(FT(i).v[j]);
-            }
-        }
-		//printf("index: %d\n", index);
-    }
+		int size = NM() > 0 ? NM() : 1;
+		for (unsigned int i = 0; i < size; i++) {
 
-    int getNumVertices(){
-        return NV();
-    }
+			//glslProgram.SetUniform(0, mvp);
+			glslProgram.SetUniform(0, mvp);
+			glslProgram.SetUniform(1, mvp_inv_trans);
+			glslProgram.SetUniform(2, mvp_wo_proj.GetSubMatrix3());
+			glslProgram.SetUniform(3, lightpos);
 
-	cy::Point3f* getVertices(){
-		return &V(0);
-        //return vertices;
-    }
+			glslProgram.SetUniform(4, getMtlKa(i));
+			glslProgram.SetUniform(5, getMtlKd(i));
+			glslProgram.SetUniform(6, getMtlKs(i));
 
-    int getvArraySize(){
-        return NF()*3;
-    }
+			glslProgram.SetUniform(7, COLOR_MODE);
 
-    cy::Point3f* getvArrayPtr(){
-        return vArrayPtr;
-    }
 
-    cy::Point3f* getnArrayPtr(){
-        return nArrayPtr;
-    }
+			if (USE_TEXTURE)
+			{
+				glslProgram.SetUniform(8, 0);
+				textureBind(i, 0, 0);
+				glslProgram.SetUniform(9, 1);
+				textureBind(i, 1, 1);
+				glslProgram.SetUniform(10, 2);
+				textureBind(i, 2, 2);
 
-	cy::Point3f* gettArrayPtr() {
-		return tArrayPtr;
-	}
-protected:
+				glslProgram.SetUniform(11, hasTextureKa(i));
+				glslProgram.SetUniform(12, hasTextureKd(i));
+				glslProgram.SetUniform(13, hasTextureKs(i));
+			}
+
+			glslProgram.SetUniform(14, camerapos);
+			glslProgram.SetUniform(15, 3);
+
+			int offset = NM() > 0 ? GetMaterialFirstFace(i) * 3 : 0;
+			int vsize = NM() > 0 ? GetMaterialFaceCount(i) * 3 : getvArraySize();
+			glDrawArrays(GL_TRIANGLES, offset, vsize);
 	
-	//cy::GLSLProgram vshader;
-	//cy::GLSLProgram fshader;
+		}
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+		if (USE_TEXTURE)
+			glDisableVertexAttribArray(2);
+	}
+
+protected:
 	
 };
 
