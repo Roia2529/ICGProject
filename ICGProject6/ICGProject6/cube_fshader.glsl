@@ -1,5 +1,5 @@
 #version 400 core
-out vec4 fragcolor;
+layout(location = 0) out vec4 fragcolor;
 
 in vec3 posT;
 

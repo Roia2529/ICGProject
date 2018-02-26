@@ -1,11 +1,15 @@
 #version 330 core
-out vec4 color;
+layout(location = 0) out vec4 color;
 
 in vec2 posT;
 
-uniform sampler2D Texturemap;
+uniform ivec2 center;
+uniform sampler2D framebuffer;
 
 void main() {
-	color = vec4(texture(Texturemap, posT).rgb, 1.0f);
+	ivec2 window = textureSize(framebuffer, 0);
+	float u = 1 - (gl_FragCoord.x - center.x) / window.x;
+	float v = (gl_FragCoord.x - center.x) / window.x;
+	color = texture(framebuffer, vec2(u,v)).rgba;
 	//color = vec4(1.0f,0.0f,0.0f, 1.0f);
 }

@@ -44,24 +44,6 @@ int main(int argc, char* args[])
 		system("pause");
 		return 0;
 	}
-	//const char *vshader = glbv.USE_TEXTURE ? glbv.VSHADER : glbv.VSHADER_NOTEX;
-	//const char *fshader = glbv.USE_TEXTURE ? glbv.FSHADER : glbv.FSHADER_NOTEX;
-
-	////Bind GLSL Prog and Set uniform var
-	//if (!glinitGLSLProgram(vshader, fshader)) {
-	//	//CY_GL_REGISTER_DEBUG_CALLBACK;
-	//	std::cerr << "load object shader failed" << std::endl;
-	//	system("pause");
-	//	return 0;
-	//}
-
-	////Bind GLSL Prog and Set uniform var
-	//if (!glinitRT_GLSLProgram(glbv.P_VSHADER, glbv.P_FSHADER)) {
-	//	//CY_GL_REGISTER_DEBUG_CALLBACK;
-	//	std::cerr << "load Plane shader failed" << std::endl;
-	//	system("pause");
-	//	return 0;
-	//}
 
 	if (!initGLRenderTexture(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT))
 		std::cerr << "Initialize texture buffer failed" << std::endl;

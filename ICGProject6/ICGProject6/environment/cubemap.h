@@ -49,7 +49,7 @@ public:					//! Constructor sets the default material values
 		if (!LoadFromFileObj(filename, loadMtl)) return false;
 		if (!HasNormals()) ComputeNormals();
 		ComputeBoundingBox();
-		setScale(1);
+		setScale(3);
 		computeArrayData();
 		LoadTexture();
 		return true;
@@ -128,8 +128,8 @@ public:					//! Constructor sets the default material values
 	void updateUniform(cy::Matrix4f project, cy::Matrix4f view) {
 		cy::Matrix4f mat = project * view * scale;
 		glslProgram.SetUniform(0, mat);
-		tcubemap.Bind(0);
-		glslProgram.SetUniform(1, 0);
+		tcubemap.Bind(1);
+		glslProgram.SetUniform(1, 1);
 	}
 
 	void textureBind(int textureid) {

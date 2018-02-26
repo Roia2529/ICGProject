@@ -15,7 +15,7 @@ trackball tkball_camera;
 static int start;
 
 cy::Point4f lightpos(0.0f, 10.0f, 0.0f, 0.0f);
-cy::Point3f camera(5.0f, 0.0f, 0.0f);
+cy::Point3f camera(0.2f, 1.1f, 12.0f);
 cy::Point3f cameraFocus(0.0f, 0.0f, 0.0f);
 cy::Point3f cameraUpVec(0.0f, 1.0f, 0.0f);
 cy::Point3f cameraCurrentPos;
@@ -104,9 +104,11 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		objList[0].setScale(scale);
 		getProjection();
 
-		object_model.SetIdentity();
+		//object_model.SetIdentity();
 
-		p_scale_Matrix.SetScale(0.8);
+		//p_scale_Matrix.SetScale(0.8);
+		plane.setScale(glbv.PLANE_SCALE);
+
 		updateView();
 	}
 
@@ -117,32 +119,25 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		//std::cout << "Camera current pos: (" << cameraCurrentPos.x << ", " << cameraCurrentPos.y << ", " << cameraCurrentPos.z << std::endl;
 
 	}
-		void glBufferBind() {
+		
+	void glBufferBind() {
 
 		//---------Object---------//
 		objList[0].initBufferBind();
 
 		//-----------Plane---------//
-		//glGenVertexArrays(1, &vao_p);
-		//glBindVertexArray(vao_p);
-
-		//vbid_p = new GLuint[1];
-		//glGenBuffers(1, vbid_p);
-
-		//glBindBuffer(GL_ARRAY_BUFFER, vbid_p[0]);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(float)*plane.getvArraySize(), plane.getvArrayPtr(), GL_STATIC_DRAW);
-
+		plane.initBufferBind();
 
 		//skybox//
 		cubemap.initBufferBind();
-}
+	}
 	
 	bool initGLRenderTexture(int width, int height) {
 		if (glrenderT.Initialize(true, 4, width, height)) {
 			
 			glrenderT.SetTextureMaxAnisotropy();
-			glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-			//glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR);
+			//glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
+			glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR);
 
 			glrenderT.SetTextureWrappingMode(GL_CLAMP,GL_CLAMP);
 			return true;
@@ -240,36 +235,83 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 	void GLrender()
 	{
 
-		//glrenderT.Bind();
+		glrenderT.Bind();
 		//Clear color buffer
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		objList[0].programBind();
-		objList[0].BufferBind();
+		//draw to buffer
+		{
+			cy::Point3f cameraPosCopy = cameraCurrentPos;
+			
+			cy::Point3f tmpCameraUp, tmpCameraPos, pN, pC, camera2plane;
+			pN = plane.GetWorldPlaneNormal();
+			pC = plane.GetWorldPlaneCenter();
+			camera2plane = cameraPosCopy - pC;
+			tmpCameraPos = -2 * (camera2plane.Dot(pN)) * pN + cameraPosCopy;
+			tmpCameraUp = -2 * (cameraUpVec.Dot(pN)) * pN + cameraUpVec;
 
-		//transformation
-		
-		cy::Matrix4f M_wo_pro;
-		M_wo_pro = tkball.getMatrix() * object_model * objList[0].getScale();
+			cy::Matrix4f view_invert = LookAt(tmpCameraPos, cameraFocus, tmpCameraUp);
+			objList[0].programBind();
+			objList[0].BufferBind();
 
-		cy::Point3f newlightpos = cy::Point3f(view *light.getMatrix()*lightpos);
-		cubemap.textureBind(3);
-		objList[0].updateUniform(M_wo_pro, pro, view, newlightpos, cameraCurrentPos);
-		objList[0].DrawArray();
+			//transformation
+			cy::Matrix4f M_wo_pro;
+			M_wo_pro = tkball.getMatrix() * object_model * objList[0].getScale();
 
+			cy::Point3f newlightpos = cy::Point3f(view_invert *light.getMatrix()*lightpos);
+			cubemap.textureBind(3);
+			objList[0].updateUniform(M_wo_pro, pro, view_invert, newlightpos, tmpCameraPos);
+			objList[0].DrawArray();
 
-		//skybox
-		glDepthMask(GL_FALSE); 
-		cubemap.programBind();
-		cubemap.BufferBind();
+			//skybox
+			glDepthMask(GL_FALSE);
+			cubemap.programBind();
+			cubemap.BufferBind();
 
-		cubemap.updateUniform(pro, view);
-		cubemap.DrawArray();
-		glDepthMask(GL_TRUE);
+			cubemap.updateUniform(pro, view_invert);
+			cubemap.DrawArray();
+			glDepthMask(GL_TRUE);
 
+		}
+		//unbind framebuffer
+		glrenderT.Unbind();
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		{
+			objList[0].programBind();
+			objList[0].BufferBind();
+
+			//transformation
+			cy::Matrix4f M_wo_pro;
+			M_wo_pro = tkball.getMatrix() * object_model * objList[0].getScale();
+
+			cy::Point3f newlightpos = cy::Point3f(view *light.getMatrix()*lightpos);
+			cubemap.textureBind(3);
+			objList[0].updateUniform(M_wo_pro, pro, view, newlightpos, cameraCurrentPos);
+			objList[0].DrawArray();
+
+			//plane
+			plane.programBind();
+			plane.BufferBind();
+
+			glrenderT.BindTexture(0);
+			//glrenderT.BuildTextureMipmaps();
+			plane.updateupdateUniform(pro, view, 0);
+			plane.DrawArray();
+
+			//skybox
+			glDepthMask(GL_FALSE);
+			cubemap.programBind();
+			cubemap.BufferBind();
+
+			cubemap.updateUniform(pro, view);
+			cubemap.DrawArray();
+			glDepthMask(GL_TRUE);
+
+		}
 		//glrenderT.Unbind();
 		//glDisable(GL_DEPTH_TEST);
 		//Clear color buffer

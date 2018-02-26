@@ -15,6 +15,7 @@ protected:
 	Material *material;
 
 	cy::Point3f center;
+	cy::Matrix4f model;
 	cy::Matrix4f scale;
 
 	bool USE_TEXTURE;
@@ -24,9 +25,10 @@ public:
 	{
 		center = cy::Point3f(0, 0, 0);
 		USE_TEXTURE = false;
+		model.SetIdentity();
 	}
 
-	void setScale(GLfloat scaleinit) {
+	virtual void setScale(GLfloat scaleinit) {
 		scale.SetScale(scaleinit);
 
 		printf("BOUND MIN: %f %f %f\n", GetBoundMin().x * scaleinit, GetBoundMin().y * scaleinit, GetBoundMin().z * scaleinit);
@@ -103,7 +105,7 @@ public:
 		//return vertices;
 	}
 
-	int getvArraySize() {
+	virtual int getvArraySize() {
 		return NF() * 3;
 	}
 
