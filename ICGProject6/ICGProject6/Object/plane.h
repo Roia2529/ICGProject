@@ -73,7 +73,7 @@ public:
 	
 		glslProgram.SetUniform(1, buffer_index);
 
-		cy::Point4f sc = proj * view * cy::Point4f(center, 1.0f);
+		cy::Point4f sc = mvp * cy::Point4f(center, 1.0f);
 		cy::Point2<int> scr_center = cy::Point2<int>(static_cast<int>(sc[0]/sc[3]*640), static_cast<int>(sc[1]/sc[3] * 480));
 		glslProgram.SetUniform("center", scr_center);
 

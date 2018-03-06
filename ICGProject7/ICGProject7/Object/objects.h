@@ -10,11 +10,12 @@ class TriObj : public BaseObject
 {
 private:
 	int COLOR_MODE;
-	cy::Matrix4f mvp, mvp_wo_proj;
+	cy::Matrix4f mvp, mvp_wo_proj, lightmvp;
 	cy::Matrix4f proj;
 	cy::Matrix3f mvp_inv_trans;
 	cy::Point3f lightpos;
 	cy::Point3f camerapos;
+	int bufferindex;
 
 public:
 	TriObj(int mode) : BaseObject() {
@@ -194,14 +195,17 @@ public:
 				glslProgram.RegisterUniform(13, "Use_Tmap_ks");
 			}
 		glslProgram.RegisterUniform(14, "cameraPos");
-		glslProgram.RegisterUniform(15, "skybox");
+		glslProgram.RegisterUniform(15, "shadowmvp");
+		glslProgram.RegisterUniform(16, "shadowmap");
 
 		
 		CY_GL_REGISTER_DEBUG_CALLBACK;
 		return true;
 	}
 
-	void updateUniform(cy::Matrix4f new_mvp_wo_pro, cy::Matrix4f new_proj, cy::Matrix4f view, cy::Point3f newlightpos, cy::Point3f newcamerapos) {
+	void updateUniform(cy::Matrix4f new_mvp_wo_pro, cy::Matrix4f new_proj, cy::Matrix4f view,
+		cy::Point3f newlightpos,
+		cy::Point3f newcamerapos, cy::Matrix4f new_light_proj, cy::Matrix4f lightview, int mode, int bufferind) {
 		
 		mvp_wo_proj = new_mvp_wo_pro;
 		proj = new_proj;
@@ -211,6 +215,10 @@ public:
 		mvp_inv_trans = mvp_wo_proj.GetSubMatrix3().GetTranspose().GetInverse();
 
 		camerapos = newcamerapos;
+
+		lightmvp = new_light_proj * lightview * mvp_wo_proj;
+		bufferindex = bufferind;
+		COLOR_MODE = mode;
 	}
 
 	virtual void DrawArray() {
@@ -246,7 +254,8 @@ public:
 			}
 
 			glslProgram.SetUniform(14, camerapos);
-			glslProgram.SetUniform(15, 3);
+			glslProgram.SetUniform(15, lightmvp);
+			glslProgram.SetUniform(16, bufferindex);
 
 			int offset = NM() > 0 ? GetMaterialFirstFace(i) * 3 : 0;
 			int vsize = NM() > 0 ? GetMaterialFaceCount(i) * 3 : getvArraySize();

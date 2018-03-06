@@ -48,6 +48,8 @@ int main(int argc, char* args[])
 	if (!initGLRenderTexture(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT))
 		std::cerr << "Initialize texture buffer failed" << std::endl;
 
+	if (!initShadowMap(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT))
+		std::cerr << "Initialize shadow map failed" << std::endl;
 	//Set Matrix
 	//teapot
 	//prepareMatrix(glbv.INIT_SCALE);

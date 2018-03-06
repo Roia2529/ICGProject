@@ -60,6 +60,9 @@
     <ClInclude Include="Object\BaseObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Object\light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -88,9 +91,6 @@
     <None Include="yoda.mtl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="plane_fshader.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="plane_vshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
@@ -104,6 +104,24 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="cube_vshader.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="plane_fshader_debug.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="plane_fshader.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="vshader_shadow.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="fshader_shadow.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="vshader_light.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="fshader_light.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -15,7 +15,7 @@ struct CubeFace {
 
 class glb {
 	public:
-	const char*	TITLE = "ICGProject 6";
+	const char*	TITLE = "ICGProject 7";
 	const char* VSHADER = "vshader.glsl";
 	const char* FSHADER = "fshader.glsl";
 
@@ -48,9 +48,9 @@ class glb {
 
 	//const double INIT_SCALE = 0.0007;
 	const double INIT_SCALE = 0.05;
-	const double PLANE_SCALE = 4.5;
+	const double PLANE_SCALE = 9;
 
-	const int COLOR_MODE = 2;
+	const int COLOR_MODE = 3;
 	enum { ROTATE, ZOOMING }	MOVE_MODE;
 
 };

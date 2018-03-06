@@ -136,8 +136,8 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		if (glrenderT.Initialize(true, 4, width, height)) {
 			
 			glrenderT.SetTextureMaxAnisotropy();
-			//glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
-			glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR);
+			glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
+			//glrenderT.SetTextureFilteringMode(GL_LINEAR, GL_LINEAR);
 
 			glrenderT.SetTextureWrappingMode(GL_CLAMP,GL_CLAMP);
 			return true;
@@ -277,6 +277,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 		}
 		//unbind framebuffer
 		glrenderT.Unbind();
+		glrenderT.BuildTextureMipmaps();
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -298,7 +299,7 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 			plane.BufferBind();
 
 			glrenderT.BindTexture(0);
-			//glrenderT.BuildTextureMipmaps();
+			
 			plane.updateupdateUniform(pro, view, 0);
 			plane.DrawArray();
 
@@ -312,39 +313,6 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 			glDepthMask(GL_TRUE);
 
 		}
-		//glrenderT.Unbind();
-		//glDisable(GL_DEPTH_TEST);
-		//Clear color buffer
-		//glClearColor(0.0f, 0.0f, 0.0f, 0.f);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		////Bind
-		//{
-		//	plane.programBind();
-
-		//	glBindVertexArray(vao_p);
-		//	glEnableVertexAttribArray(0);
-		//	glBindBuffer(GL_ARRAY_BUFFER, vbid_p[0]);
-		//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-		//	glrenderT.BindTexture(0);
-		//	glrenderT.BuildTextureMipmaps();
-		//}
-		//
-		//{
-		//	cy::Matrix4f M_wo_pro;
-		//	cy::Matrix4f finalM;
-		//	M_wo_pro = tkball_plane.getMatrix() * p_scale_Matrix;
-		//	finalM = pro * M_wo_pro;
-
-		//	plane.glslProgram.SetUniform(0, finalM);
-		//	//std::cout << glrenderT.GetTextureID() << std::endl;
-		//	
-		//	plane.glslProgram.SetUniform(1, 0);
-		//	
-		//}
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-		//glDisableVertexAttribArray(0);
-		
 
 		//Update screen
 		CY_GL_REGISTER_DEBUG_CALLBACK;

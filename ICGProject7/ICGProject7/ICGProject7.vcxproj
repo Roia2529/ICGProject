@@ -140,6 +140,7 @@
     <ClInclude Include="glHeader.h" />
     <ClInclude Include="loadpng\lodepng.h" />
     <ClInclude Include="Object\BaseObject.h" />
+    <ClInclude Include="Object\light.h" />
     <ClInclude Include="Object\Material.h" />
     <ClInclude Include="Object\objects.h" />
     <ClInclude Include="Object\plane.h" />
@@ -156,11 +157,16 @@
     <None Include="cube_vshader.glsl" />
     <None Include="fshader.glsl" />
     <None Include="fshader.notex.glsl" />
+    <None Include="fshader_light.glsl" />
+    <None Include="fshader_shadow.glsl" />
     <None Include="plane_fshader.glsl" />
+    <None Include="plane_fshader_debug.glsl" />
     <None Include="plane_vshader.glsl" />
     <None Include="teapot.mtl" />
     <None Include="vshader.glsl" />
     <None Include="vshader.notex.glsl" />
+    <None Include="vshader_light.glsl" />
+    <None Include="vshader_shadow.glsl" />
     <None Include="yoda.mtl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
