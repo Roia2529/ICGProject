@@ -25,7 +25,9 @@ public:
 
 	lightObj(cy::Point3f lpos) : BaseObject() {
 		//COLOR_MODE = mode;
-		model.AddTrans(lpos);
+		model.SetRotationX(-cy::cyPi<float>() / 2.0f);
+		//model.AddTrans(lpos);
+		model.AddTrans(cy::Point3f(4,2.0,0));
 	}
 
 	bool Load(const char *filename, bool loadMtl, bool useTexture)

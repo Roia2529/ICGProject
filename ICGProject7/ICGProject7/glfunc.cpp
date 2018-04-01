@@ -15,7 +15,7 @@ trackball tkball_camera;
 //***********************//
 static int start;
 
-cy::Point3f lightpos(5.0f, 5.0f, 0.0f);
+cy::Point3f lightpos(4.0f, 4.0f, 0.0f);
 cy::Point3f camera(0.2f, 1.1f, 12.0f);
 cy::Point3f cameraFocus(0.0f, 0.0f, 0.0f);
 cy::Point3f cameraUpVec(0.0f, 1.0f, 0.0f);
@@ -286,7 +286,7 @@ cy::GLRenderDepth2D shadowMap;
 		glClear(GL_DEPTH_BUFFER_BIT);
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		cy::Point3f newlightpos = cy::Point3f(light.getMatrix()*cy::Point4f(lightpos, 1.0f).GetNonHomogeneous());
+		cy::Point3f newlightpos = cy::Point3f(light.getMatrix()*cy::Point4f(lightpos, 1.0f));
 		//std::cout << newlightpos.x << " " << newlightpos.y << " " << newlightpos.z << std::endl;
 		cy::Matrix4f lightView, lightProjection;
 		lightView = LookAt(newlightpos, cameraFocus, cameraUpVec);

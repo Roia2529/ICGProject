@@ -24,27 +24,43 @@ const vec3 ambientL = vec3(0.2f, 0.2f, 0.2f);
 const vec3 specularL = vec3(1.0f, 1.0f, 1.0f);
 const vec3 diffuseL = vec3(1.0f, 1.0f, 1.0f);
 const float reflect_ratio = 0.6;
+const float bias = 0.00005;
 
-//float ShadowCalculation(vec4 fragPosLightSpace)
-//{
-//	// perform perspective divide
-//	//vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-//	//// transform to [0,1] range
-//	////projCoords = projCoords * 0.5 + 0.5;
-//	//// get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-//	//float closestDepth = texture(shadowmap, projCoords.xy).r;
-//	//// get depth of current fragment from light's perspective
-//	//float currentDepth = projCoords.z;
-//	//// check whether current frag pos is in shadow
-//	//float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
-//
-//	float shadow = 0;
-//	if (texture(shadowmap, fragPosLightSpace.xy).z  <  fragPosLightSpace.z) {
-//		shadow = 0.5;
-//	}
-//
-//	return 1.0 - shadow;
-//}
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+	// perform perspective divide
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	// transform to [0,1] range
+	projCoords = projCoords * 0.5 + 0.5;
+	// get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+	float closestDepth = texture(shadowmap, projCoords.xy).r;
+	// get depth of current fragment from light's perspective
+	float currentDepth = projCoords.z;
+	// calculate bias (based on depth map resolution and slope)
+	//vec3 normal = normalize(fs_in.Normal);
+	//vec3 lightDir = normalize(lightPos - fs_in.FragPos);
+	//float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+	// check whether current frag pos is in shadow
+	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+	// PCF
+	//float shadow = 0.0;
+	//vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+	//for (int x = -1; x <= 1; ++x)
+	//{
+	//	for (int y = -1; y <= 1; ++y)
+	//	{
+	//		float pcfDepth = texture(shadowmap, projCoords.xy + vec2(x, y) * texelSize).r;
+	//		shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+	//	}
+	//}
+	//shadow /= 9.0;
+
+	// keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+	if (projCoords.z > 1.0)
+		shadow = 0.0;
+
+	return 1.0 - shadow;
+}
 
 void main() {
 	if(colormode==1){
@@ -72,12 +88,12 @@ void main() {
 	//}
 	else if (colormode == 3) {
 		//float inshadow = texture(shadowmap, shadowcoord.xyz / shadowcoord.w);
-		//float inshadow = ShadowCalculation(shadowcoord);
-		float inshadow = 1.0;
+		float inshadow = ShadowCalculation(shadowcoord);
+		/*float inshadow = 1.0;
 		if (texture(shadowmap, 0.5 * shadowcoord.xy + 0.5).z  <  (0.5 * shadowcoord.z + 0.5)) {
 			inshadow = 0.5;
 		}
-
+*/
 		vec3 N = normalize(faceN);
 		vec3 L = normalize(lightP - faceP);
 		vec3 V = normalize(reflect(-L, N));
