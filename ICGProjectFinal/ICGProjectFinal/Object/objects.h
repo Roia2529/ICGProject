@@ -175,7 +175,7 @@ public:
         //for shading
         glslProgram.RegisterUniform(1, "matInvTrans");
         glslProgram.RegisterUniform(2, "matOrigin");
-        glslProgram.RegisterUniform(3, "lightP");
+        /*glslProgram.RegisterUniform(3, "lightP");
 		
 		glslProgram.RegisterUniform(4, "Mtl_ka");
 		glslProgram.RegisterUniform(5, "Mtl_kd");
@@ -196,7 +196,7 @@ public:
 			}
 		glslProgram.RegisterUniform(14, "cameraPos");
 		glslProgram.RegisterUniform(15, "shadowmvp");
-		glslProgram.RegisterUniform(16, "shadowmap");
+		glslProgram.RegisterUniform(16, "shadowmap");*/
 
 		
 		CY_GL_REGISTER_DEBUG_CALLBACK;
@@ -226,11 +226,11 @@ public:
 		int size = NM() > 0 ? NM() : 1;
 		for (unsigned int i = 0; i < size; i++) {
 
+			////glslProgram.SetUniform(0, mvp);
 			//glslProgram.SetUniform(0, mvp);
-			glslProgram.SetUniform(0, mvp);
-			glslProgram.SetUniform(1, mvp_inv_trans);
-			glslProgram.SetUniform(2, mvp_wo_proj.GetSubMatrix3());
-			glslProgram.SetUniform(3, lightpos);
+			//glslProgram.SetUniform(1, mvp_inv_trans);
+			//glslProgram.SetUniform(2, mvp_wo_proj.GetSubMatrix3());
+			/*glslProgram.SetUniform(3, lightpos);
 
 			glslProgram.SetUniform(4, getMtlKa(i));
 			glslProgram.SetUniform(5, getMtlKd(i));
@@ -255,7 +255,7 @@ public:
 
 			glslProgram.SetUniform(14, camerapos);
 			glslProgram.SetUniform(15, lightmvp);
-			glslProgram.SetUniform(16, bufferindex);
+			glslProgram.SetUniform(16, bufferindex);*/
 
 			int offset = NM() > 0 ? GetMaterialFirstFace(i) * 3 : 0;
 			int vsize = NM() > 0 ? GetMaterialFaceCount(i) * 3 : getvArraySize();
@@ -266,6 +266,7 @@ public:
 		glDisableVertexAttribArray(1);
 		if (USE_TEXTURE)
 			glDisableVertexAttribArray(2);
+		glBindVertexArray(0);
 	}
 
 protected:

@@ -79,12 +79,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fshader.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="vshader.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="teapot.mtl">
       <Filter>Resource Files</Filter>
     </None>
@@ -92,12 +86,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="plane_vshader.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="fshader.notex.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="vshader.notex.glsl">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="cube_fshader.glsl">
@@ -112,16 +100,28 @@
     <None Include="plane_fshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="vshader_shadow.glsl">
+    <None Include="scene_fshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="fshader_shadow.glsl">
+    <None Include="scene_vshader.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="vshader_light.glsl">
+    <None Include="ssao_blur_f.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="fshader_light.glsl">
+    <None Include="ssao_f.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ssao_geometry_f.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ssao_geometry_v.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ssao_lighting_f.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ssao_v.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

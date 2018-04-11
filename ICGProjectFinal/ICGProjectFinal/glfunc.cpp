@@ -16,27 +16,21 @@ trackball tkball_camera;
 static int start;
 
 cy::Point3f lightpos(4.0f, 4.0f, 0.0f);
-cy::Point3f camera(0.2f, 1.1f, 12.0f);
+cy::Point3f camera(-7.8f, 6.1f, -4.0f);
 cy::Point3f cameraFocus(0.0f, 0.0f, 0.0f);
 cy::Point3f cameraUpVec(0.0f, 1.0f, 0.0f);
 cy::Point3f cameraCurrentPos;
 ///---object-------//
 std::vector<TriObj> objList;
-//GLuint vao;
-//GLuint *vbid;
 ///----plane-------//
 PlaneObj plane;
-//GLuint vao_p;
-//GLuint *vbid_p;
 ///----skybox------//
-//CubeMap cubemap;
-//GLuint vao_cube;
-//GLuint *vbid_cube;
+CubeMap cubemap;
 ///-----light------//
 lightObj lightobj(lightpos);
 //------------------------------//
 //cy::Matrix4f object_scale;
-cy::Matrix4f object_model = cy::Matrix4f::MatrixRotationX(-cy::cyPi<float>() / 2);
+cy::Matrix4f object_rotate = cy::Matrix4f::MatrixRotationX(-cy::cyPi<float>() / 2);
 
 //cy::Matrix4f object_model;
 cy::Matrix4f p_scale_Matrix;
@@ -49,41 +43,28 @@ cy::GLRenderTexture<GL_TEXTURE_2D> glrenderT;
 cy::GLRenderDepth2D shadowMap;
 //------------------------------//
 
-	bool initShaders() {
-		const char *vshader = glbv.USE_TEXTURE ? glbv.VSHADER : glbv.VSHADER_NOTEX;
-		const char *fshader = glbv.USE_TEXTURE ? glbv.FSHADER : glbv.FSHADER_NOTEX;
+//GLSL
+cy::GLSLProgram GeometryPass, LightingPass, SSAO, SSAOBlur, viewbuffer;
+//Frame buffer for GeometryPas
+unsigned int gBuffer;
+unsigned int gPosition, gNormal, gAlbedo;
+unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+unsigned int rboDepth;
 
-		//object shader
-		std::cout << "Loading Object Shaders....." << std::endl;
-		if (!objList[0].initGLSLProgram(vshader, fshader)) {
-			std::cout << "Loading Object Shaders failed." << std::endl;
-			return false;
-		}
+//Frame buffer for SSAO
+unsigned int ssaoFBO, ssaoBlurFBO;
+unsigned int ssaoColorBuffer, ssaoColorBufferBlur;
 
-		//plane shader
-		std::cout << "Loading Plane Shaders....." << std::endl;
-		if (!plane.initGLSLProgram(glbv.P_VSHADER, glbv.P_FSHADER)) {
-			std::cerr << "load Plane shader failed" << std::endl;
-			return false;
-		}
-
-		std::cout << "Loading Light Shaders....." << std::endl;
-		if (!lightobj.initGLSLProgram("vshader_shadow.glsl", "fshader_shadow.glsl")) {
-			std::cerr << "load light shader failed" << std::endl;
-			return false;
-		}
-
-		//if (!cubemap.initGLSLProgram(glbv.CUBE_VSHADER, glbv.CUBE_FSHADER)) {
-		//	std::cerr << "load cube shader failed" << std::endl;
-		//	return false;
-		//}
-		return true;
-	}
+//Sample Kernal
+std::vector<cy::Point3f> ssaoKernel;
+std::vector<cy::Point3f> ssaoNoise;
+unsigned int noiseTexture;
 
 	bool LoadObj(const char *filename, bool loadMtl) {
 		TriObj *tobj = new TriObj(glbv.COLOR_MODE);
 		printf("********Loading object....*******\n");
-		if (!tobj->Load(filename, loadMtl,glbv.USE_TEXTURE)) {
+		//if (!tobj->Load(filename, loadMtl, glbv.USE_TEXTURE)) {
+		if (!tobj->Load("nanosuit.obj", loadMtl,glbv.USE_TEXTURE)) {
 			printf(" -- ERROR: Cannot load file \"%s.\"", filename);
 			delete tobj;
 			return false;
@@ -95,19 +76,74 @@ cy::GLRenderDepth2D shadowMap;
 		printf("Sucessfully load %s!\n", filename);
 		printf("%d object in object list!\n", objList.size());
 
-		//printf("********Loading cube....*******\n");
-		//if (!cubemap.Load("cube.obj", false, false, glbv.faces)) {
-		//	printf(" -- ERROR: Cannot load file \"cube.obj.\"");
-		//	return false;
-		//}
-		//printf("Sucessfully load cube.obj!\n");
+		printf("********Loading cube....*******\n");
+		if (!cubemap.Load("cube.obj", false, false, glbv.faces)) {
+			printf(" -- ERROR: Cannot load file \"cube.obj.\"");
+			return false;
+		}
+		printf("Sucessfully load cube.obj!\n");
 
-		printf("********Loading light....*******\n");
+		/*printf("********Loading light....*******\n");
 		if (!lightobj.Load("light.obj", false, false)) {
 			printf(" -- ERROR: Cannot load file \"light.obj.\"");
 			return false;
 		}
-		printf("Sucessfully load light.obj!\n");
+		printf("Sucessfully load light.obj!\n");*/
+		return true;
+	}
+
+	void glBufferBind() {
+
+		//---------Object---------//
+		objList[0].initBufferBind();
+
+		//-----------Plane---------//
+		plane.initBufferBind();
+
+		//skybox//
+		cubemap.initBufferBind();
+
+		//lightobj.initBufferBind();
+		//lightobj.initBufferBindPlane();
+	}
+
+	bool initShaders() {
+		const char *vshader = glbv.USE_TEXTURE ? glbv.VSHADER : glbv.VSHADER_NOTEX;
+		const char *fshader = glbv.USE_TEXTURE ? glbv.FSHADER : glbv.FSHADER_NOTEX;
+
+		//object shader
+		std::cout << "Loading Object Shaders....." << std::endl;
+		//if (!objList[0].initGLSLProgram(vshader, fshader)) {
+		if (!objList[0].initGLSLProgram("scene_vshader.glsl", "scene_fshader.glsl")) {
+			std::cout << "Loading Object Shaders failed." << std::endl;
+			return false;
+		}
+
+		//plane shader
+		//std::cout << "Loading Plane Shaders....." << std::endl;
+		//if (!plane.initGLSLProgram(glbv.P_VSHADER, glbv.P_FSHADER)) {
+		//	std::cerr << "load Plane shader failed" << std::endl;
+		//	return false;
+		//}
+
+		/*std::cout << "Loading Light Shaders....." << std::endl;
+		if (!lightobj.initGLSLProgram("vshader_shadow.glsl", "fshader_shadow.glsl")) {
+			std::cerr << "load light shader failed" << std::endl;
+			return false;
+		}*/
+
+		if (!cubemap.initGLSLProgram("scene_vshader.glsl", "scene_fshader.glsl")) {
+			std::cerr << "load cube shader failed" << std::endl;
+			return false;
+		}
+		//GeometryPass, LightingPass, SSAO, SSAOBlur;
+		//if (!glslProgram.BuildFiles(vShaderFile, fShaderFile)) return false;
+		if (!GeometryPass.BuildFiles("ssao_geometry_v.glsl","ssao_geometry_f.glsl")) return false;
+		if (!LightingPass.BuildFiles("ssao_v.glsl", "ssao_lighting_f.glsl")) return false;
+		if (!SSAO.BuildFiles("ssao_v.glsl", "ssao_f.glsl")) return false;
+		if (!SSAOBlur.BuildFiles("ssao_v.glsl", "ssao_blur_f.glsl")) return false;
+
+		if (!viewbuffer.BuildFiles("plane_vshader.glsl", "plane_fshader.glsl")) return false;
 		return true;
 	}
 
@@ -133,35 +169,133 @@ cy::GLRenderDepth2D shadowMap;
 		objList[0].setScale(scale);
 		getProjection();
 
-		plane.setScale(glbv.PLANE_SCALE);
-
-		lightobj.setScale(0.1f);
+		//cubemap.setScale(1.0);
+		//plane.setScale(glbv.PLANE_SCALE);
+		//lightobj.setScale(0.1f);
 		updateView();
+	}
+
+	float lerp(float a, float b, float f)
+	{
+		return a + f * (b - a);
+	}
+
+	void generateSampleKernel() {
+		
+		for (unsigned int i = 0; i < 64; ++i)
+		{
+			float r_x = rand() / (float)RAND_MAX;
+			float r_y = rand() / (float)RAND_MAX;
+			float r_z = rand() / (float)RAND_MAX;
+			cy::Point3f sample(r_x * 2.0 - 1.0, r_y * 2.0 - 1.0, r_z);
+			sample.Normalize();
+			sample *= rand() / (float)RAND_MAX;
+			float scale = float(i) / 64.0;
+
+			// scale samples s.t. they're more aligned to center of kernel
+			scale = lerp(0.1f, 1.0f, scale * scale);
+			sample *= scale;
+			ssaoKernel.push_back(sample);
+		}
+
+		for (unsigned int i = 0; i < 16; i++)
+		{
+			float r_x = rand() / (float)RAND_MAX;
+			float r_y = rand() / (float)RAND_MAX;
+			cy::Point3f noise(r_x * 2.0 - 1.0, r_y * 2.0 - 1.0, 0.0f); // rotate around z-axis (in tangent space)
+			ssaoNoise.push_back(noise);
+		}
+
+		glGenTextures(1, &noiseTexture);
+		glBindTexture(GL_TEXTURE_2D, noiseTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
 	void updateView() {
 		
 		cameraCurrentPos = tkball_camera.getMatrix().GetSubMatrix3() * ((cameraFocus - camera) * tkball_camera.getZoomRatio() + camera);
 		view = LookAt(cameraCurrentPos,cameraFocus,cameraUpVec);
-		//std::cout << "Camera current pos: (" << cameraCurrentPos.x << ", " << cameraCurrentPos.y << ", " << cameraCurrentPos.z << std::endl;
+		std::cout << "Camera current pos: (" << cameraCurrentPos.x << ", " << cameraCurrentPos.y << ", " << cameraCurrentPos.z << std::endl;
 
 	}
+
+	void initGBuffer() {
+		const unsigned int SCR_WIDTH = glbv.SCREEN_WIDTH;
+		const unsigned int SCR_HEIGHT = glbv.SCREEN_HEIGHT;
+
+		glGenFramebuffers(1, &gBuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+
+		// position color buffer
+		glGenTextures(1, &gPosition);
+		glBindTexture(GL_TEXTURE_2D, gPosition);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+		// normal color buffer
+		glGenTextures(1, &gNormal);
+		glBindTexture(GL_TEXTURE_2D, gNormal);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+		// color + specular color buffer
+		glGenTextures(1, &gAlbedo);
+		glBindTexture(GL_TEXTURE_2D, gAlbedo);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
+		// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
 		
-	void glBufferBind() {
-
-		//---------Object---------//
-		objList[0].initBufferBind();
-
-		//-----------Plane---------//
-		plane.initBufferBind();
-
-		//skybox//
-		//cubemap.initBufferBind();
-
-		lightobj.initBufferBind();
-		lightobj.initBufferBindPlane();
+		glDrawBuffers(3, attachments);
+		// create and attach depth buffer (renderbuffer)
+		
+		glGenRenderbuffers(1, &rboDepth);
+		glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+		// finally check if framebuffer is complete
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "Framebuffer not complete!" << std::endl;
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	
+	void initSSAOBuffer() {
+		const unsigned int SCR_WIDTH = glbv.SCREEN_WIDTH;
+		const unsigned int SCR_HEIGHT = glbv.SCREEN_HEIGHT;
+
+		glGenFramebuffers(1, &ssaoFBO);  glGenFramebuffers(1, &ssaoBlurFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+
+		glGenTextures(1, &ssaoColorBuffer);
+		glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0);
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "SSAO Framebuffer not complete!" << std::endl;
+		// and blur stage
+		glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+		glGenTextures(1, &ssaoColorBufferBlur);
+		glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBufferBlur, 0);
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "SSAO Blur Framebuffer not complete!" << std::endl;
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
 	bool initGLRenderTexture(int width, int height) {
 		if (glrenderT.Initialize(true, 4, width, height)) {
 			
@@ -188,6 +322,7 @@ cy::GLRenderDepth2D shadowMap;
 		return false;
 	}
 
+	//event handler
 	void GLGetMouseButton(GLint button, GLint state, GLint x, GLint y) {
 
 		cy::Point2f pos;
@@ -277,79 +412,81 @@ cy::GLRenderDepth2D shadowMap;
 
 	void GLrender()
 	{
-
-		//glrenderT.Bind();
-		shadowMap.Bind();
-		//Clear color buffer
-		glClearColor(0.3f, 0.6f, 0.3f, 0.f);
-		//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 		cy::Point3f newlightpos = cy::Point3f(light.getMatrix()*cy::Point4f(lightpos, 1.0f));
 		//std::cout << newlightpos.x << " " << newlightpos.y << " " << newlightpos.z << std::endl;
 		cy::Matrix4f lightView, lightProjection;
 		lightView = LookAt(newlightpos, cameraFocus, cameraUpVec);
-		//lightProjection = OrthographicProj(aspect, 10.0f, 10.0f, -0.5f, 10.f);
 		lightProjection = pro;
 
 		//transformation
-		cy::Matrix4f M_wo_pro;
-		//M_wo_pro = tkball.getMatrix() * object_model * objList[0].getScale();
-		M_wo_pro = object_model * objList[0].getScale();
+		cy::Matrix4f obmodel;
+		obmodel = object_rotate * objList[0].getScale();
 
-		//draw to shadow map
-		{
-			//teapot
-			objList[0].programBind();
-			objList[0].BufferBind();
-			objList[0].updateUniform(M_wo_pro, lightProjection, lightView, newlightpos, cameraCurrentPos,
-				lightProjection, lightView, 1, 0);
-			objList[0].DrawArray();
-
-			//plane
-			plane.programBind();
-			plane.BufferBind();
-			plane.updateupdateUniform(lightProjection, lightView, lightProjection, lightView, newlightpos, 1 ,0);
-			plane.DrawArray();
-
-		}
-		//unbind framebuffer
-		//glrenderT.Unbind();
-		////glrenderT.
-		shadowMap.Unbind();
-		//shadowMap.BuildTextureMipmaps();
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		//Geometry pass
 		{
-			shadowMap.BindTexture(0);
-			/*glrenderT.BindTexture(0);
-			glrenderT.BuildTextureMipmaps();*/
-
-		/*	lightobj.programBind();
-			lightobj.BufferBindPlane();
-			lightobj.updateFrameBuffer(0);
-			lightobj.DrawArrayPlane();*/
-
-			objList[0].programBind();
+			/*
+			uniform bool invertedNormals;
+			uniform mat4 viewmodel;
+			uniform mat3 viewmode_invtrans;
+			uniform mat4 mat;
+			*/
+			glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+			glEnable(GL_DEPTH_TEST);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			GeometryPass.Bind();
+			// room cube
+			cy::Matrix4f cubemodel = cubemap.getScale();
+			cy::Matrix4f viewmodel = view * cubemodel;
+			cy::Matrix4f mat = pro * viewmodel;
+			GeometryPass.SetUniform("viewmodel", viewmodel);
+			GeometryPass.SetUniform("viewmode_invtrans", viewmodel.GetSubMatrix3().GetTranspose().GetInverse()); // invert normals as we're inside the cube
+			GeometryPass.SetUniform("mat", mat);
+			//GeometryPass.SetUniform("invertedNormals", 1);
+			cubemap.BufferBind();
+			cubemap.DrawArray();
+			// nanosuit model on the floor
+			GeometryPass.Bind();
+			viewmodel = view * obmodel;
+			mat = pro * viewmodel;
+			GeometryPass.SetUniform("viewmodel", viewmodel);
+			GeometryPass.SetUniform("viewmode_invtrans", viewmodel.GetSubMatrix3().GetTranspose().GetInverse()); // invert normals as we're inside the cube
+			GeometryPass.SetUniform("mat", mat);
+			//GeometryPass.SetUniform("invertedNormals", 0);
 			objList[0].BufferBind();
-			objList[0].updateUniform(M_wo_pro, pro, view, newlightpos, cameraCurrentPos, lightProjection, lightView, 3,0);
 			objList[0].DrawArray();
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-			//plane
-			plane.programBind();
+			glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+									  // clear all relevant buffers
+			glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			viewbuffer.Bind();
 			plane.BufferBind();
-			plane.updateupdateUniform(pro, view, lightProjection, lightView, newlightpos, 3, 0);
+			glBindTexture(GL_TEXTURE_2D, gNormal);
 			plane.DrawArray();
 
-			//draw light
-			lightobj.BufferBind();
-			lightobj.updateUniform(pro*view*light.getMatrix());
-			lightobj.DrawArray();
+
+			//camera
+			/*objList[0].programBind();
+			objList[0].BufferBind();
+			objList[0].updateUniform(obmodel, pro, view, newlightpos, cameraCurrentPos, lightProjection, lightView, 3,0);
+			objList[0].DrawArray();
+
+			glDepthMask(GL_FALSE);
+			cubemap.programBind();
+			cubemap.BufferBind();
+
+			cubemap.updateUniform(pro, view);
+			cubemap.DrawArray();
+			glDepthMask(GL_TRUE);*/
+
 		}
 
 		//Update screen
-		//CY_GL_REGISTER_DEBUG_CALLBACK;
+		CY_GL_REGISTER_DEBUG_CALLBACK;
 		glutSwapBuffers();
 	}

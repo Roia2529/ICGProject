@@ -11,7 +11,7 @@ protected:
 	GLuint vao;
 	GLuint *vbid;
 	cy::Point3f *vArrayPtr, *nArrayPtr, *tArrayPtr;
-	cy::GLSLProgram glslProgram;
+	
 	Material *material;
 
 	cy::Point3f center;
@@ -21,6 +21,9 @@ protected:
 	bool USE_TEXTURE;
 
 public:
+	cy::GLSLProgram glslProgram;
+
+	//constructor
 	BaseObject()
 	{
 		center = cy::Point3f(0, 0, 0);

@@ -6,16 +6,19 @@
 class PlaneObj : public BaseObject
 {
 private:
+	unsigned int vbo;
 	cy::Matrix4f mvp;
 	cy::Point4f pNormal = cy::Point4f(0.0f, 0.0f, 1.0f, 0.0f);
 
-	float vertice[18] = {
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		-1.0f,  1.0f, 0.0f,
-		-1.0f,  1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		1.0f,  1.0f, 0.0f,
+	float vertice[24] = {
+		// positions   // texCoords
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		1.0f, -1.0f,  1.0f, 0.0f,
+
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		1.0f, -1.0f,  1.0f, 0.0f,
+		1.0f,  1.0f,  1.0f, 1.0f
 	};
 
 public:
@@ -29,8 +32,8 @@ public:
 
 		scale.AddTrans(-center);
 
-		model *= cy::Matrix4f::MatrixTrans(cy::Point3f(0, -1.7, 0));
-		model *= cy::Matrix4f::MatrixRotationX(-cy::cyPi<float>() / 2);
+		//model *= cy::Matrix4f::MatrixTrans(cy::Point3f(0, -1.7, 0));
+		//model *= cy::Matrix4f::MatrixRotationX(-cy::cyPi<float>() / 2);
 		//model *= cy::Matrix4f::MatrixRotationZ(-cy::cyPi<float>() / 2);
 	}
 
@@ -53,19 +56,30 @@ public:
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
-		vbid = new GLuint[1];
-		glGenBuffers(1, vbid);
+		//vbid = new GLuint[2];
+		glGenBuffers(1, &vbo);
 
-		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*getvArraySize(), &vertice, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
 	}
 
 	void BufferBind() {
-		glBindVertexArray(vao);
+		glBindVertexArray(vao);/*
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);*/
+
+		/*glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+		*/	
 	}
 
 	void updateupdateUniform(cy::Matrix4f proj, cy::Matrix4f view, cy::Matrix4f lightproj, cy::Matrix4f lightview,cy::Point3f lightpos,int mode, int buffer_index) {
@@ -89,11 +103,11 @@ public:
 
 	void DrawArray() {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(0);
+		//glDisableVertexAttribArray(0);
 	}
 
 	int getvArraySize() {
-		return 18;
+		return 24;
 	}
 
 	cy::Point3f GetWorldPlaneNormal() {

@@ -155,18 +155,18 @@
   <ItemGroup>
     <None Include="cube_fshader.glsl" />
     <None Include="cube_vshader.glsl" />
-    <None Include="fshader.glsl" />
-    <None Include="fshader.notex.glsl" />
-    <None Include="fshader_light.glsl" />
-    <None Include="fshader_shadow.glsl" />
     <None Include="plane_fshader.glsl" />
     <None Include="plane_fshader_debug.glsl" />
     <None Include="plane_vshader.glsl" />
+    <None Include="scene_fshader.glsl" />
+    <None Include="scene_vshader.glsl" />
+    <None Include="ssao_blur_f.glsl" />
+    <None Include="ssao_f.glsl" />
+    <None Include="ssao_geometry_f.glsl" />
+    <None Include="ssao_geometry_v.glsl" />
+    <None Include="ssao_lighting_f.glsl" />
+    <None Include="ssao_v.glsl" />
     <None Include="teapot.mtl" />
-    <None Include="vshader.glsl" />
-    <None Include="vshader.notex.glsl" />
-    <None Include="vshader_light.glsl" />
-    <None Include="vshader_shadow.glsl" />
     <None Include="yoda.mtl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

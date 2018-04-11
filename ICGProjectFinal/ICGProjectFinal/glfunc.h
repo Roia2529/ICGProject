@@ -16,6 +16,10 @@ void updateView();
 cy::Matrix4f OrthographicProj(float aspect, float x, float y, float n, float f, bool fixaspect);
 cy::Matrix4f LookAt(cy::Point3f campos, cy::Point3f focus, cy::Point3f up);
 
+void generateSampleKernel();
+
+void initGBuffer();
+void initSSAOBuffer();
 bool initGLRenderTexture(int width, int height);
 bool initShadowMap(int width, int height);
 

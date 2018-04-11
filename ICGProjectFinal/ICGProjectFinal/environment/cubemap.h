@@ -36,6 +36,9 @@ public:					//! Constructor sets the default material values
 		center = (GetBoundMin() + GetBoundMax())*scaleinit*(0.5);
 		
 		scale.AddTrans(-center);
+
+		//place transition
+		scale.AddTrans(cy::Point3f(0,8.8,0));
 	}
 
 	cy::Matrix4f getScale() {
@@ -49,9 +52,9 @@ public:					//! Constructor sets the default material values
 		if (!LoadFromFileObj(filename, loadMtl)) return false;
 		if (!HasNormals()) ComputeNormals();
 		ComputeBoundingBox();
-		setScale(3);
+		setScale(1);
 		computeArrayData();
-		LoadTexture();
+		if(useTexture)LoadTexture();
 		return true;
 	}
 
@@ -99,16 +102,20 @@ public:					//! Constructor sets the default material values
 	}
 
 	void initBufferBind() {
-		initTexture();
+		if(this->USE_TEXTURE)initTexture();
 
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
-		vbid = new GLuint[1];
-		glGenBuffers(1, vbid);
+		vbid = new GLuint[2];
+		glGenBuffers(2, vbid);
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*getvArraySize(), vArrayPtr, GL_STATIC_DRAW);
+
+		//normals
+		glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cy::Point3f)*getvArraySize(), getnArrayPtr(), GL_STATIC_DRAW);
 
 	}
 
@@ -116,7 +123,7 @@ public:					//! Constructor sets the default material values
 		if (!glslProgram.BuildFiles(vShaderFile, fShaderFile)) return false;
 		glslProgram.Bind();
 		glslProgram.RegisterUniform(0, "mat");
-		glslProgram.RegisterUniform(1, "skybox");
+		if (this->USE_TEXTURE)glslProgram.RegisterUniform(1, "skybox");
 
 		return true;
 	}
@@ -128,14 +135,16 @@ public:					//! Constructor sets the default material values
 	void updateUniform(cy::Matrix4f project, cy::Matrix4f view) {
 		cy::Matrix4f mat = project * view * scale;
 		glslProgram.SetUniform(0, mat);
-		tcubemap.Bind(1);
-		glslProgram.SetUniform(1, 1);
+		glslProgram.SetUniform("matInvTrans", scale.GetSubMatrix3().GetTranspose().GetInverse());
+		glslProgram.SetUniform("matOrigin", scale.GetSubMatrix3());
+
+		if (this->USE_TEXTURE) {
+			tcubemap.Bind(1);
+			glslProgram.SetUniform(1, 1);
+		}
 	}
 
 	void textureBind(int textureid) {
-		//glActiveTexture(textureid + GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-		//tcubemap.Bind(textureid);
 		tcubemap.Bind(textureid);
 	}
 
@@ -145,11 +154,16 @@ public:					//! Constructor sets the default material values
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vbid[0]);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, vbid[1]);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 
 	void DrawArray() {
 		glDrawArrays(GL_TRIANGLES, 0, 3 * NF());
 		glDisableVertexAttribArray(0);
+		glBindVertexArray(0);
 	}
 
 	void computeArrayData() {
@@ -161,9 +175,9 @@ public:					//! Constructor sets the default material values
 
 			for (unsigned int j = 0; j<3; j++) {
 				vArrayPtr[index] = V(F(i).v[j]);
-				if (HasNormals()) nArrayPtr[index] = VN(FN(i).v[j]);
-				
-				//std::cout << "x: " << vArrayPtr[index].x << " y:" << vArrayPtr[index].y << " z:" << vArrayPtr[index].z << std::endl;
+				if (HasNormals()) {
+					nArrayPtr[index] = VN(FN(i).v[j]);
+				}
 				index++;
 			}
 		}

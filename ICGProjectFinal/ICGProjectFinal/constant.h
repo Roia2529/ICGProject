@@ -15,7 +15,7 @@ struct CubeFace {
 
 class glb {
 	public:
-	const char*	TITLE = "ICGProject 7";
+	const char*	TITLE = "ICGProject Final";
 	const char* VSHADER = "vshader.glsl";
 	const char* FSHADER = "fshader.glsl";
 

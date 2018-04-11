@@ -9,11 +9,6 @@ int main(int argc, char* args[])
 	//Initialize FreeGLUT
 	glutInit(&argc, args);
 
-	//Create Double Buffered Window
-	//Option: GLUT_RGBA, GLUT_DEPTH, GLUT_DOUBLE
-	//GLUT_DOUBLE use 2 buffer, one is saved for new drawing, and it replace the former one when change is done.
-
-
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	
 	glutInitWindowSize(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT);
@@ -24,9 +19,6 @@ int main(int argc, char* args[])
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_RGBA | GLUT_DOUBLE);
 
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_CULL_FACE);
-	//glEnable(GL_TEXTURE_2D);
-	//glDepthFunc(GL_LEQUAL);
 
 	GLenum res = glewInit();
 	if (res != GLEW_OK)
@@ -45,16 +37,18 @@ int main(int argc, char* args[])
 		return 0;
 	}
 
-	if (!initGLRenderTexture(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT))
+	
+	/*if (!initGLRenderTexture(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT))
 		std::cerr << "Initialize texture buffer failed" << std::endl;
 
 	if (!initShadowMap(glbv.SCREEN_WIDTH, glbv.SCREEN_HEIGHT))
 		std::cerr << "Initialize shadow map failed" << std::endl;
-	//Set Matrix
-	//teapot
-	//prepareMatrix(glbv.INIT_SCALE);
-	//sphere
-	prepareMatrix(0.2);
+*/
+	initGBuffer();
+	initSSAOBuffer();
+	prepareMatrix(0.7);
+
+	generateSampleKernel();
 
 	/*initialize glew*/
 	std::cout <<"---------Instruction-----------" << std::endl;
