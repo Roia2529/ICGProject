@@ -60,6 +60,10 @@ std::vector<cy::Point3f> ssaoKernel;
 std::vector<cy::Point3f> ssaoNoise;
 unsigned int noiseTexture;
 
+//SSAO parameters
+float radius = 0.5; //step = .05
+float bias = 0.025;	//step = 0.005
+
 	bool LoadObj(const char *filename, bool loadMtl) {
 		TriObj *tobj = new TriObj(glbv.COLOR_MODE);
 		printf("********Loading object....*******\n");
@@ -219,7 +223,7 @@ unsigned int noiseTexture;
 		
 		cameraCurrentPos = tkball_camera.getMatrix().GetSubMatrix3() * ((cameraFocus - camera) * tkball_camera.getZoomRatio() + camera);
 		view = LookAt(cameraCurrentPos,cameraFocus,cameraUpVec);
-		std::cout << "Camera current pos: (" << cameraCurrentPos.x << ", " << cameraCurrentPos.y << ", " << cameraCurrentPos.z << std::endl;
+		//std::cout << "Camera current pos: (" << cameraCurrentPos.x << ", " << cameraCurrentPos.y << ", " << cameraCurrentPos.z << std::endl;
 
 	}
 
@@ -283,7 +287,9 @@ unsigned int noiseTexture;
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0);
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 			std::cout << "SSAO Framebuffer not complete!" << std::endl;
-		// and blur stage
+
+
+		//blur stage
 		glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
 		glGenTextures(1, &ssaoColorBufferBlur);
 		glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
@@ -375,6 +381,8 @@ unsigned int noiseTexture;
 	}
 
 	void GLGetSpecialKey(int key, int x, int y) {
+
+		bool updateParameters = false;
 		switch (key) {
 		case (GLUT_KEY_F6):
 			std::cout << "Recompiling Shaders" << std::endl;
@@ -382,8 +390,42 @@ unsigned int noiseTexture;
 			initShaders();
 			std::cout << "Compilation Done" << std::endl;
 			break;
+		case (GLUT_KEY_F1):
+			if (glbv.DRAW_MODE == glbv.SSAO) {
+				glbv.DRAW_MODE = glbv.SSAOBLUR;
+				std::cout << "Draw framebuffer SSAOBlur" << std::endl;
+			}
+			else if (glbv.DRAW_MODE == glbv.SSAOBLUR) {
+				glbv.DRAW_MODE = glbv.SSAO;
+				std::cout << "Draw framebuffer SSAO" << std::endl;
+			}
+		case (GLUT_KEY_UP):
+			if (radius<5.0) {
+				radius = radius + 0.05;
+				updateParameters = true;
+			}
+		case (GLUT_KEY_DOWN):
+			if (radius>0.05) {
+				radius -= 0.05;
+				updateParameters = true;
+			}
+		case (GLUT_KEY_RIGHT):
+			if (bias<2.0) {
+				bias += 0.005;
+				updateParameters = true;
+			}
+		case (GLUT_KEY_LEFT):
+			if (bias>0.005) {
+				bias -= 0.005;
+				updateParameters = true;
+			}
 		default:
 			break;
+		}
+
+		if (updateParameters) {
+			std::cout << "radius: " <<radius << std::endl;
+			std::cout << "bias: " << bias << std::endl;
 		}
 	}
 
@@ -425,66 +467,122 @@ unsigned int noiseTexture;
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//Geometry pass
-		{
+		
 			/*
 			uniform bool invertedNormals;
 			uniform mat4 viewmodel;
 			uniform mat3 viewmode_invtrans;
 			uniform mat4 mat;
 			*/
-			glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-			glEnable(GL_DEPTH_TEST);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			GeometryPass.Bind();
-			// room cube
-			cy::Matrix4f cubemodel = cubemap.getScale();
-			cy::Matrix4f viewmodel = view * cubemodel;
-			cy::Matrix4f mat = pro * viewmodel;
-			GeometryPass.SetUniform("viewmodel", viewmodel);
-			GeometryPass.SetUniform("viewmode_invtrans", viewmodel.GetSubMatrix3().GetTranspose().GetInverse()); // invert normals as we're inside the cube
-			GeometryPass.SetUniform("mat", mat);
-			//GeometryPass.SetUniform("invertedNormals", 1);
-			cubemap.BufferBind();
-			cubemap.DrawArray();
-			// nanosuit model on the floor
-			GeometryPass.Bind();
-			viewmodel = view * obmodel;
-			mat = pro * viewmodel;
-			GeometryPass.SetUniform("viewmodel", viewmodel);
-			GeometryPass.SetUniform("viewmode_invtrans", viewmodel.GetSubMatrix3().GetTranspose().GetInverse()); // invert normals as we're inside the cube
-			GeometryPass.SetUniform("mat", mat);
-			//GeometryPass.SetUniform("invertedNormals", 0);
-			objList[0].BufferBind();
-			objList[0].DrawArray();
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-			glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
-									  // clear all relevant buffers
-			glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
-			glClear(GL_COLOR_BUFFER_BIT);
+			//GeometryPass
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+				glEnable(GL_DEPTH_TEST);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			viewbuffer.Bind();
-			plane.BufferBind();
-			glBindTexture(GL_TEXTURE_2D, gNormal);
-			plane.DrawArray();
+				GeometryPass.Bind();
+				// room cube
+				cy::Matrix4f cubemodel = cubemap.getScale();
+				cy::Matrix4f viewmodel = view * cubemodel;
+				cy::Matrix4f mat = pro * viewmodel;
+				GeometryPass.SetUniform("viewmodel", viewmodel);
+				GeometryPass.SetUniform("viewmode_invtrans", viewmodel.GetSubMatrix3().GetTranspose().GetInverse()); // invert normals as we're inside the cube
+				GeometryPass.SetUniform("mat", mat);
+				GeometryPass.SetUniform("invertedNormals", 1);
+
+				cubemap.BufferBind();
+				cubemap.DrawArray();
+				// nanosuit model on the floor
+				GeometryPass.Bind();
+				viewmodel = view * obmodel;
+				mat = pro * viewmodel;
+				GeometryPass.SetUniform("viewmodel", viewmodel);
+				GeometryPass.SetUniform("viewmode_invtrans", viewmodel.GetSubMatrix3().GetTranspose().GetInverse()); // invert normals as we're inside the cube
+				GeometryPass.SetUniform("mat", mat);
+				GeometryPass.SetUniform("invertedNormals", 0);
+				objList[0].BufferBind();
+				objList[0].DrawArray();
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			}
 
 
-			//camera
-			/*objList[0].programBind();
-			objList[0].BufferBind();
-			objList[0].updateUniform(obmodel, pro, view, newlightpos, cameraCurrentPos, lightProjection, lightView, 3,0);
-			objList[0].DrawArray();
+			//SSAO texture
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+				glClear(GL_COLOR_BUFFER_BIT);
+				SSAO.Bind();
+				// Send kernel + rotation 
+				for (unsigned int i = 0; i < 64; i++) {
+					std::string tstring = "samples[" + std::to_string(i) + "]";
+					
+					SSAO.SetUniform(tstring.c_str(), ssaoKernel[i]);
+				}
+					
+				SSAO.SetUniform("projection", pro);
 
-			glDepthMask(GL_FALSE);
-			cubemap.programBind();
-			cubemap.BufferBind();
+				SSAO.SetUniform("gPosition", 0);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, gPosition);
 
-			cubemap.updateUniform(pro, view);
-			cubemap.DrawArray();
-			glDepthMask(GL_TRUE);*/
+				SSAO.SetUniform("gNormal", 1);
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, gNormal);
 
-		}
+				SSAO.SetUniform("texNoise", 2);
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, noiseTexture);
+
+				SSAO.SetUniform("radius", radius);
+				SSAO.SetUniform("bias", bias);
+
+				//glDisable(GL_DEPTH_TEST);
+				plane.BufferBind();
+				plane.DrawArray();
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			}
+			
+			//blur ssao
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+				glClear(GL_COLOR_BUFFER_BIT);
+				SSAOBlur.Bind();
+
+				SSAO.SetUniform("ssaoInput", 0);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+				plane.BufferBind();
+				plane.DrawArray();
+
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			}
+
+			//draw quad with shading
+			{
+				//draw buffer on plane for debug
+				glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
+										  // clear all relevant buffers
+				glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
+				glClear(GL_COLOR_BUFFER_BIT);
+
+				viewbuffer.Bind();
+				glActiveTexture(GL_TEXTURE0); 
+				if (glbv.DRAW_MODE == glbv.SSAO) {
+					glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+				}
+				else if(glbv.DRAW_MODE == glbv.SSAOBLUR){
+					glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+				}
+				viewbuffer.SetUniform("screenTexture", 0);
+				viewbuffer.SetUniform("mode", 1);
+				plane.BufferBind();
+				//layout(location = 0) out vec3 gPosition;
+				//layout(location = 1) out vec3 gNormal;
+				//layout(location = 2) out vec3 gAlbedo;
+				
+				plane.DrawArray();
+			}
 
 		//Update screen
 		CY_GL_REGISTER_DEBUG_CALLBACK;

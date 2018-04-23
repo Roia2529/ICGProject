@@ -50,6 +50,7 @@ int main(int argc, char* args[])
 
 	generateSampleKernel();
 
+	glbv.DRAW_MODE = glbv.SSAO;
 	/*initialize glew*/
 	std::cout <<"---------Instruction-----------" << std::endl;
 	std::cout << "ESC : exit" << std::endl;

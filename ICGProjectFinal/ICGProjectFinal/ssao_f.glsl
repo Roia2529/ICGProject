@@ -11,11 +11,11 @@ uniform vec3 samples[64];
 
 // parameters (you'd probably want to use them as uniforms to more easily tweak the effect)
 int kernelSize = 64;
-float radius = 0.5;
-float bias = 0.025;
+uniform float radius;
+uniform float bias;
 
 // tile noise texture over screen based on screen dimensions divided by noise size
-const vec2 noiseScale = vec2(1280.0 / 4.0, 720.0 / 4.0);
+const vec2 noiseScale = vec2(640 / 4.0, 480 / 4.0);
 
 uniform mat4 projection;
 

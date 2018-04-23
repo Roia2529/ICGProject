@@ -50,7 +50,9 @@ public:					//! Constructor sets the default material values
 		this->figure_names= figurenames;
 
 		if (!LoadFromFileObj(filename, loadMtl)) return false;
-		if (!HasNormals()) ComputeNormals();
+		if (!HasNormals()) {
+			ComputeNormals();
+		}
 		ComputeBoundingBox();
 		setScale(1);
 		computeArrayData();
