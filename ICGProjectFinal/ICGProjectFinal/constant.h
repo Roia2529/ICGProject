@@ -52,7 +52,7 @@ class glb {
 
 	const int COLOR_MODE = 3;
 	enum { ROTATE, ZOOMING }	MOVE_MODE;
-	enum { SSAO, SSAOBLUR, SHADING}	DRAW_MODE;
+	enum { SSAO, SSAOBLUR, SHADING, NOSSAO}	DRAW_MODE;
 
 };
 #endif /* constant_h */

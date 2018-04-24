@@ -56,9 +56,11 @@ int main(int argc, char* args[])
 	std::cout << "ESC : exit" << std::endl;
 	std::cout << "left mouse : adjust camera angles" << std::endl;
 	std::cout << "right mouse : adjust camera distance" << std::endl;
-	std::cout << "CTRL : Press CTRL to rotate teapot by mouse" << std::endl;
 	std::cout << "ALT : Press ALT to rotate light position by mouse" << std::endl;
 	std::cout << "F6 : recompile shader" << std::endl;
+	std::cout << "Up/Down : Increase/Decrease radius of SSAO" << std::endl;
+	std::cout << "Right/Left : Increase/Decrease bias of SSAO" << std::endl;
+	std::cout << "F1: Change mode for drawing" << std::endl;
 	std::cout << "------------------------------" << std::endl;
 
 

@@ -69,7 +69,7 @@ float bias = 0.025;	//step = 0.005
 		printf("********Loading object....*******\n");
 		//if (!tobj->Load(filename, loadMtl, glbv.USE_TEXTURE)) {
 		if (!tobj->Load("nanosuit.obj", loadMtl,glbv.USE_TEXTURE)) {
-			printf(" -- ERROR: Cannot load file \"%s.\"", filename);
+			printf(" -- ERROR: Cannot load file \"nanosuit.\"", filename);
 			delete tobj;
 			return false;
 		}
@@ -77,7 +77,7 @@ float bias = 0.025;	//step = 0.005
 			objList.push_back(*tobj);  // add to the list
 		}
 
-		printf("Sucessfully load %s!\n", filename);
+		printf("Sucessfully load nanosuit!\n", filename);
 		printf("%d object in object list!\n", objList.size());
 
 		printf("********Loading cube....*******\n");
@@ -396,35 +396,50 @@ float bias = 0.025;	//step = 0.005
 				std::cout << "Draw framebuffer SSAOBlur" << std::endl;
 			}
 			else if (glbv.DRAW_MODE == glbv.SSAOBLUR) {
+				glbv.DRAW_MODE = glbv.SHADING;
+				std::cout << "Draw Shading Result with SSAO" << std::endl;
+			}
+			else if (glbv.DRAW_MODE == glbv.SHADING) {
+				glbv.DRAW_MODE = glbv.NOSSAO;
+				std::cout << "Draw Scene without SSAO" << std::endl;
+			}
+			else {
 				glbv.DRAW_MODE = glbv.SSAO;
 				std::cout << "Draw framebuffer SSAO" << std::endl;
 			}
+			break;
 		case (GLUT_KEY_UP):
 			if (radius<5.0) {
 				radius = radius + 0.05;
-				updateParameters = true;
+				//updateParameters = true;
+				printf("radius: %f \n", radius);
 			}
+			break;
 		case (GLUT_KEY_DOWN):
 			if (radius>0.05) {
 				radius -= 0.05;
-				updateParameters = true;
+				//updateParameters = true;
+				printf("radius: %f \n", radius);
 			}
+			break;
 		case (GLUT_KEY_RIGHT):
 			if (bias<2.0) {
 				bias += 0.005;
 				updateParameters = true;
 			}
+			break;
 		case (GLUT_KEY_LEFT):
 			if (bias>0.005) {
 				bias -= 0.005;
 				updateParameters = true;
 			}
+			break;
 		default:
 			break;
 		}
 
 		if (updateParameters) {
-			std::cout << "radius: " <<radius << std::endl;
+			//std::cout << "radius: " <<radius << std::endl;
 			std::cout << "bias: " << bias << std::endl;
 		}
 	}
@@ -466,7 +481,7 @@ float bias = 0.025;	//step = 0.005
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		//glEnable()
 		
 			/*
 			uniform bool invertedNormals;
@@ -549,7 +564,7 @@ float bias = 0.025;	//step = 0.005
 				glClear(GL_COLOR_BUFFER_BIT);
 				SSAOBlur.Bind();
 
-				SSAO.SetUniform("ssaoInput", 0);
+				SSAOBlur.SetUniform("ssaoInput", 0);
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
 				plane.BufferBind();
@@ -558,7 +573,38 @@ float bias = 0.025;	//step = 0.005
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			}
 
-			//draw quad with shading
+			if (glbv.DRAW_MODE == glbv.SHADING || glbv.DRAW_MODE == glbv.NOSSAO) {
+				glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				LightingPass.Bind();
+
+				LightingPass.SetUniform("lightPos", newlightpos);
+
+				LightingPass.SetUniform("gPosition", 0);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, gPosition);
+
+				LightingPass.SetUniform("gNormal", 1);
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, gNormal);
+
+				LightingPass.SetUniform("gAlbedo", 2);
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, gAlbedo);
+
+				LightingPass.SetUniform("ssao", 3);
+				glActiveTexture(GL_TEXTURE3);
+				glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+
+				if (glbv.DRAW_MODE == glbv.NOSSAO)
+					LightingPass.SetUniform("noSSAO", true);
+				else
+					LightingPass.SetUniform("noSSAO", false);
+				plane.BufferBind();
+				plane.DrawArray();
+
+			}
+			else//draw quad with shading
 			{
 				//draw buffer on plane for debug
 				glDisable(GL_DEPTH_TEST); // disable depth test so screen-space quad isn't discarded due to depth test.
@@ -567,6 +613,7 @@ float bias = 0.025;	//step = 0.005
 				glClear(GL_COLOR_BUFFER_BIT);
 
 				viewbuffer.Bind();
+				viewbuffer.SetUniform("screenTexture", 0);
 				glActiveTexture(GL_TEXTURE0); 
 				if (glbv.DRAW_MODE == glbv.SSAO) {
 					glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
@@ -574,7 +621,7 @@ float bias = 0.025;	//step = 0.005
 				else if(glbv.DRAW_MODE == glbv.SSAOBLUR){
 					glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
 				}
-				viewbuffer.SetUniform("screenTexture", 0);
+				
 				viewbuffer.SetUniform("mode", 1);
 				plane.BufferBind();
 				//layout(location = 0) out vec3 gPosition;

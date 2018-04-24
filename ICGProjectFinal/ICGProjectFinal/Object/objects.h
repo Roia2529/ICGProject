@@ -33,17 +33,18 @@ public:
 		printf("%d vertices found in object\n", NV());
 		printf("%d materials found in object\n", NM());
 
-		if (NM())
+		if (NM()) {
 			printf("*-----materials info:-----*\n");
-		for (int i = 0; i < NM(); i++) {
-			printf("Material %d:\n", i);
-			if(M(i).map_Ka)
-			std::cout << "map_Ka: "<< M(i).map_Ka<<std::endl;
-			if (M(i).map_Kd)
-			std::cout << "map_Kd: " << M(i).map_Kd << std::endl;
-			if (M(i).map_Ks)
-			std::cout << "map_Ks: " << M(i).map_Ks << std::endl;
-			printf("-------------------------\n");
+			for (int i = 0; i < NM(); i++) {
+				printf("Material %d:\n", i);
+				if (M(i).map_Ka)
+					std::cout << "map_Ka: " << M(i).map_Ka << std::endl;
+				if (M(i).map_Kd)
+					std::cout << "map_Kd: " << M(i).map_Kd << std::endl;
+				if (M(i).map_Ks)
+					std::cout << "map_Ks: " << M(i).map_Ks << std::endl;
+				printf("-------------------------\n");
+			}
 		}
 
 		computeArrayData();
@@ -121,7 +122,7 @@ public:
 	}
 
 	void initBufferBind() {
-		initTexture();
+		//initTexture();
 
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
